@@ -4,28 +4,26 @@ import { RouterProvider } from "react-router/dom";
 import Chanting from "./pages/chanting/Chanting";
 import Profile from "./pages/profile/Profile";
 import ModeToggle from "./components/mode-toggle";
+import Layout from "./common_components/Layout";
 function App() {
   const router = createBrowserRouter([
     {
-      path: "/",
-      element: <div>Hello World</div>,
-    },
-    {
-      path: "/chanting",
-      element: <Chanting />,
-    },
-    {
-      path: "/profile",
-      element: <Profile />,
+      element: <Layout />,
+      children: [
+        { path: "/", element: <div>Hello World</div> },
+        { path: "/chanting", element: <Chanting /> },
+        { path: "/profile", element: <Profile /> },
+      ],
     },
   ]);
 
   return (
     <div className="relative min-h-screen">
       {/* Top-right toggle */}
-      <div className="absolute top-4 right-4 z-50">
+
+      {/* <div className="absolute top-4 right-4 z-50">
         <ModeToggle />
-      </div>
+      </div> */}
 
       {/* Router content */}
       <div className="p-6">
