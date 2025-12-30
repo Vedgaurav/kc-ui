@@ -5,6 +5,7 @@ import Chanting from "./pages/chanting/Chanting";
 import Profile from "./pages/profile/Profile";
 import ModeToggle from "./components/mode-toggle";
 import Layout from "./common_components/Layout";
+import Signup from "./pages/Login/Signup";
 function App() {
   const router = createBrowserRouter([
     {
@@ -13,6 +14,7 @@ function App() {
         { path: "/", element: <div>Hello World</div> },
         { path: "/chanting", element: <Chanting /> },
         { path: "/profile", element: <Profile /> },
+        { path: "/signup", element: <Signup /> },
       ],
     },
   ]);
