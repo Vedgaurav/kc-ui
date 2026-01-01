@@ -1,4 +1,4 @@
-@import "tailwindcss";
+ @import "tailwindcss";
 @import "tw-animate-css";
 
 
@@ -125,7 +125,88 @@
   
 }
 
+   
+   
+/* ===============================
+   INPUT BASE (SHADCN SAFE)
+   =============================== */
 
+   input,
+   textarea,
+   select {
+     background-color: transparent; /* IMPORTANT */
+     color: var(--foreground);
+   
+     border: 1px solid var(--border);
+     border-radius: var(--radius-md);
+   
+     padding: 0.5rem 0.75rem;
+   
+     outline: none;
+     appearance: none;
+     caret-color: var(--foreground);
+   
+     /* Real background rendered via shadow */
+     box-shadow: 0 0 0 1000px var(--input) inset;
+   
+     transition:
+       border-color 0.2s ease,
+       box-shadow 0.2s ease;
+   }
+   
+   /* Placeholder */
+   input::placeholder,
+   textarea::placeholder {
+     color: var(--muted-foreground);
+     opacity: 1;
+   }
+   
+   /* Focus */
+   input:focus,
+   textarea:focus,
+   select:focus {
+     border-color: var(--ring);
+     box-shadow:
+       0 0 0 1px var(--ring),
+       0 0 0 1000px var(--input) inset;
+   }
+   
+   /* ===============================
+      CHROME / EDGE / SAFARI AUTOFILL
+      =============================== */
+   
+   input:-webkit-autofill,
+   textarea:-webkit-autofill,
+   select:-webkit-autofill {
+     -webkit-text-fill-color: var(--foreground) !important;
+     caret-color: var(--foreground) !important;
+   
+     /* Neutralize Chrome autofill completely */
+     background-color: transparent !important;
+   
+     box-shadow:
+       0 0 0 1000px var(--input) inset !important;
+   
+     -webkit-box-shadow:
+       0 0 0 1000px var(--input) inset !important;
+   
+     border: 1px solid var(--border) !important;
+   
+     /* Prevent flash */
+     transition: background-color 9999s ease-in-out 0s;
+   }
+   
+   /* Autofill focus */
+   input:-webkit-autofill:focus,
+   textarea:-webkit-autofill:focus,
+   select:-webkit-autofill:focus {
+     box-shadow:
+       0 0 0 1px var(--ring),
+       0 0 0 1000px var(--input) inset !important;
+   }
+   
+
+   
 
 
 
