@@ -27,6 +27,12 @@ export default function Navigation() {
             <Link to="/signup">Signup</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild>
+            <Link to="/login">Login</Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   );

@@ -1,6 +1,7 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
+import { useAddUser } from "./AddUser";
 
 import {
   Card,
@@ -19,33 +20,54 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-} from "@/components/ui/input-group";
-import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { COUNTRY_CODES_BY_CONTINENT } from "@/constants/country-codes";
+
+export const COUNTRY_DISPLAY_MAP = Object.values(COUNTRY_CODES_BY_CONTINENT)
+  .flat()
+  .reduce((acc, c) => {
+    acc[c.dialCode] = `${c.dialCode} (${c.iso})`;
+    return acc;
+  }, {});
 
 /* -------------------- ZOD SCHEMA -------------------- */
+
 const formSchema = z.object({
-  firstName: z.string().min(2, "First name is required"),
-  lastName: z.string().min(2, "Last name is required"),
-  email: z.email("Invalid email address"),
+  firstName: z
+    .string()
+    .trim()
+    .min(1, "First Name is required")
+    .min(2, "Minimum 2 characters required")
+    .max(10, "Maximum 10 characters allowed"),
+
+  lastName: z
+    .string()
+    .trim()
+    .min(1, "Last Name is required")
+    .min(2, "Minimum 2 characters required"),
+
+  email: z.string().min(1, "Email is required").email("Invalid email address"),
+
   countryCode: z.string().min(1, "Country code required"),
+
   phoneNumber: z
     .string()
     .regex(/^[0-9]{10}$/, "Phone number must be 10 digits"),
-  facilitatorName: z.string().min(2, "Facilitator name is required"),
+
+  facilitatorName: z
+    .string()
+    .trim()
+    .min(1, "Facilitator name is required")
+    .min(2, "Minimum 2 characters required"),
 });
 
 export default function Signup() {
+  const { addUser } = useAddUser();
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,6 +82,7 @@ export default function Signup() {
 
   const onSubmit = (data) => {
     console.log("Form Data:", data);
+    addUser(data);
   };
 
   return (
@@ -81,11 +104,11 @@ export default function Signup() {
               name="firstName"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field>
                   <FieldLabel>First Name</FieldLabel>
-                  <Input {...field} placeholder="John" />
+                  <Input {...field} placeholder="John" maxLength="10" />
                   {fieldState.error && (
-                    <FieldDescription className="text-destructive">
+                    <FieldDescription className="text-destructive text-left">
                       {fieldState.error.message}
                     </FieldDescription>
                   )}
@@ -98,11 +121,11 @@ export default function Signup() {
               name="lastName"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field>
                   <FieldLabel>Last Name</FieldLabel>
-                  <Input {...field} placeholder="Doe" />
+                  <Input {...field} placeholder="Doe" maxLength="10" />
                   {fieldState.error && (
-                    <FieldDescription className="text-destructive">
+                    <FieldDescription className="text-destructive text-left">
                       {fieldState.error.message}
                     </FieldDescription>
                   )}
@@ -115,7 +138,7 @@ export default function Signup() {
               name="email"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field>
                   <FieldLabel>Email</FieldLabel>
                   <Input
                     {...field}
@@ -123,7 +146,7 @@ export default function Signup() {
                     placeholder="john@example.com"
                   />
                   {fieldState.error && (
-                    <FieldDescription className="text-destructive">
+                    <FieldDescription className="text-destructive text-left">
                       {fieldState.error.message}
                     </FieldDescription>
                   )}
@@ -136,7 +159,7 @@ export default function Signup() {
               name="phoneNumber"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field>
                   <FieldLabel>Phone Number</FieldLabel>
 
                   <div className="flex gap-2">
@@ -150,13 +173,32 @@ export default function Signup() {
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger className="w-[120px]">
-                            <SelectValue />
+                            <SelectValue placeholder="+91 (IN)">
+                              {COUNTRY_DISPLAY_MAP[field.value]}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="+91">+91 (IN)</SelectItem>
-                            <SelectItem value="+1">+1 (US)</SelectItem>
-                            <SelectItem value="+44">+44 (UK)</SelectItem>
-                            <SelectItem value="+61">+61 (AU)</SelectItem>
+                            {Object.entries(COUNTRY_CODES_BY_CONTINENT).map(
+                              ([continent, countries]) => (
+                                <div key={continent}>
+                                  <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                                    {continent
+                                      .replace(/([A-Z])/g, " $1")
+                                      .trim()}
+                                  </div>
+
+                                  {countries.map((country) => (
+                                    <SelectItem
+                                      key={country.iso}
+                                      value={country.iso + country.dialCode}
+                                    >
+                                      {country.dialCode} ({country.iso}){" "}
+                                      {country.name}
+                                    </SelectItem>
+                                  ))}
+                                </div>
+                              )
+                            )}
                           </SelectContent>
                         </Select>
                       )}
@@ -171,7 +213,7 @@ export default function Signup() {
                     />
                   </div>
                   {fieldState.error && (
-                    <FieldDescription className="text-destructive">
+                    <FieldDescription className="text-destructive text-left">
                       {fieldState.error.message}
                     </FieldDescription>
                   )}
@@ -184,11 +226,11 @@ export default function Signup() {
               name="facilitatorName"
               control={form.control}
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
+                <Field>
                   <FieldLabel>Facilitator Name</FieldLabel>
                   <Input {...field} placeholder="Facilitator Name" />
                   {fieldState.error && (
-                    <FieldDescription className="text-destructive">
+                    <FieldDescription className="text-destructive text-left">
                       {fieldState.error.message}
                     </FieldDescription>
                   )}

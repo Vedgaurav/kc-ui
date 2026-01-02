@@ -6,6 +6,8 @@ import Profile from "./pages/profile/Profile";
 import ModeToggle from "./components/mode-toggle";
 import Layout from "./common_components/Layout";
 import Signup from "./pages/Login/Signup";
+import { Login } from "./common_components/Login";
+import { Toaster } from "./components/ui/sonner";
 function App() {
   const router = createBrowserRouter([
     {
@@ -15,6 +17,7 @@ function App() {
         { path: "/chanting", element: <Chanting /> },
         { path: "/profile", element: <Profile /> },
         { path: "/signup", element: <Signup /> },
+        { path: "/login", element: <Login /> },
       ],
     },
   ]);
@@ -28,6 +31,7 @@ function App() {
       </div> */}
 
       {/* Router content */}
+      <Toaster richColors position="top-right" className="text-left" />
       <div className="p-6">
         <RouterProvider router={router} />
       </div>
