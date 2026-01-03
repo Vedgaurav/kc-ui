@@ -49,9 +49,9 @@ function App() {
   ]);
 
   return (
-    <div className="relative min-h-screen">
+    <div>
       <Toaster richColors position="top-right" className="text-left" />
-      <div className="p-6">
+      <div>
         <RouterProvider router={router}>
           <AuthProvider />
         </RouterProvider>

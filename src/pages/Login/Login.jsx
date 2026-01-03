@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { GoogleLogin } from "@react-oauth/google";
-import { useEffect, useState, createContext } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useTheme } from "@/components/theme-provider";
@@ -26,15 +26,15 @@ export function Login() {
 
   useEffect(() => {
     if (theme === "dark") {
-      setGoogleTheme("outline"); // dark-friendly
+      setGoogleTheme("outline");
     } else {
-      setGoogleTheme("filled_blue"); // light-friendly
+      setGoogleTheme("filled_blue");
     }
   }, [theme]);
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      setIsLoading(true); // ✅ block UI immediately
+      setIsLoading(true);
 
       const url = import.meta.env.VITE_BACKEND_BASE_URL + "/auth/google";
 
@@ -43,50 +43,52 @@ export function Login() {
         { idToken: credentialResponse.credential },
         { withCredentials: true }
       );
+
       login(res?.data);
 
-      navigate("/chanting", { replace: true }); // ✅ prevents back flicker
+      navigate("/chanting", { replace: true });
     } catch (error) {
       console.error("Google login failed", error);
-      toast.error("Unauthorized user: " + error?.response?.data?.errorMessage);
-      setIsLoading(false); // allow retry
+      const data = error?.response?.data;
+      toast.error(data?.errorMessage);
+      setIsLoading(false);
     }
   };
   return (
-    <div>
+    <div className="grid grid-cols-4 gap-2 mt-20">
       {isLoading ? (
-        <>
-          <div className="flex flex-col items-center gap-4">
-            <Button disabled size="sm">
-              <Spinner />
-              Loading...
-            </Button>
-          </div>
-        </>
+        <div className="col-span-2 col-start-2">
+          <Button disabled size="sm">
+            <Spinner />
+            Loading...
+          </Button>
+        </div>
       ) : (
-        <>
-          <div className="flex justify-center">
-            <Card className=" w-1/2 mt-30">
-              <CardHeader>
-                <CardTitle>Login</CardTitle>
-              </CardHeader>
-              <CardContent className="flex justify-center">
+        <div className="col-span-4 sm:col-span-2 sm:col-start-2">
+          <Card className="min-h-[30vh] sm:min-h-auto flex flex-col justify-center sm:max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle>Login</CardTitle>
+            </CardHeader>
+
+            <CardContent className="flex justify-center">
+              <div className="w-full max-w-2xs sm:max-w-sm">
                 <GoogleLogin
-                  theme={googleTheme}
+                  size="large"
+                  width="100%"
                   onSuccess={handleGoogleSuccess}
+                  onError={() => toast.error("Google login failed")}
                 />
-              </CardContent>
-              <CardFooter className="flex justify-center">
-                <Button>
-                  <Link to="/signup">Signup</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </>
+              </div>
+            </CardContent>
+
+            <CardFooter className="flex justify-center sm:mt-5">
+              <Button>
+                <Link to="/signup">Signup</Link>
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
       )}
     </div>
   );
 }
-
-export const getAccessToken = () => accessToken;

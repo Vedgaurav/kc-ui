@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import useSecureAxios from "@/common_components/hooks/useSecureAxios";
 import { BASE_URL } from "@/constants/Constants";
+import { toast } from "sonner";
 
 const AuthContext = createContext(null);
 
@@ -14,6 +15,7 @@ export function AuthProvider({ children }) {
    * Called after successful login
    */
   const login = (userData) => {
+    console.log("AuthContext login");
     setUser(userData);
   };
 
@@ -32,15 +34,33 @@ export function AuthProvider({ children }) {
   };
 
   /**
+   * LogoutAll = clear backend session for all logins for this user + memory
+   */
+  const logoutAll = async () => {
+    try {
+      const url = BASE_URL + "/auth/logoutAll";
+      await secureAxios.post(url);
+    } catch (e) {
+      // ignore backend failure
+    } finally {
+      setUser(null);
+    }
+  };
+
+  /**
    * Restore session on page refresh
    */
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const res = await secureAxios.get("/auth/me");
+        const url = BASE_URL + "/api/users/auth";
+        const res = await secureAxios.get(url);
         setUser(res.data); // { email, phoneNumber, firstName, lastName, roles }
-      } catch {
+      } catch (error) {
         setUser(null);
+        //toast.error("Unauthorized");
+        // console.log("Logging out");
+        logout();
       } finally {
         setLoading(false);
       }
@@ -61,6 +81,7 @@ export function AuthProvider({ children }) {
         loading,
         login,
         logout,
+        logoutAll,
       }}
     >
       {children}

@@ -86,169 +86,173 @@ export default function Signup() {
   };
 
   return (
-    <Card className="w-full sm:max-w-md">
-      <CardHeader>
-        <CardTitle>Registration Form</CardTitle>
-        <CardDescription>Please fill in your personal details</CardDescription>
-      </CardHeader>
+    <div className="min-h-screen flex items-center justify-center sm:pt-0">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Registration Form</CardTitle>
+          <CardDescription>
+            Please fill in your personal details
+          </CardDescription>
+        </CardHeader>
 
-      <CardContent>
-        <form
-          id="registration-form"
-          onSubmit={form.handleSubmit(onSubmit)}
-          noValidate
-        >
-          <FieldGroup>
-            {/* First Name */}
-            <Controller
-              name="firstName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>First Name</FieldLabel>
-                  <Input {...field} placeholder="John" maxLength="10" />
-                  {fieldState.error && (
-                    <FieldDescription className="text-destructive text-left">
-                      {fieldState.error.message}
-                    </FieldDescription>
-                  )}
-                </Field>
-              )}
-            />
+        <CardContent>
+          <form
+            id="registration-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            noValidate
+          >
+            <FieldGroup>
+              {/* First Name */}
+              <Controller
+                name="firstName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>First Name</FieldLabel>
+                    <Input {...field} placeholder="John" maxLength="10" />
+                    {fieldState.error && (
+                      <FieldDescription className="text-destructive text-left">
+                        {fieldState.error.message}
+                      </FieldDescription>
+                    )}
+                  </Field>
+                )}
+              />
 
-            {/* Last Name */}
-            <Controller
-              name="lastName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>Last Name</FieldLabel>
-                  <Input {...field} placeholder="Doe" maxLength="10" />
-                  {fieldState.error && (
-                    <FieldDescription className="text-destructive text-left">
-                      {fieldState.error.message}
-                    </FieldDescription>
-                  )}
-                </Field>
-              )}
-            />
+              {/* Last Name */}
+              <Controller
+                name="lastName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Last Name</FieldLabel>
+                    <Input {...field} placeholder="Doe" maxLength="10" />
+                    {fieldState.error && (
+                      <FieldDescription className="text-destructive text-left">
+                        {fieldState.error.message}
+                      </FieldDescription>
+                    )}
+                  </Field>
+                )}
+              />
 
-            {/* Email */}
-            <Controller
-              name="email"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>Email</FieldLabel>
-                  <Input
-                    {...field}
-                    type="email"
-                    placeholder="john@example.com"
-                  />
-                  {fieldState.error && (
-                    <FieldDescription className="text-destructive text-left">
-                      {fieldState.error.message}
-                    </FieldDescription>
-                  )}
-                </Field>
-              )}
-            />
-
-            {/* Phone Number */}
-            <Controller
-              name="phoneNumber"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>Phone Number</FieldLabel>
-
-                  <div className="flex gap-2">
-                    {/* Country Code */}
-                    <Controller
-                      name="countryCode"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger className="w-[120px]">
-                            <SelectValue placeholder="+91 (IN)">
-                              {COUNTRY_DISPLAY_MAP[field.value]}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.entries(COUNTRY_CODES_BY_CONTINENT).map(
-                              ([continent, countries]) => (
-                                <div key={continent}>
-                                  <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
-                                    {continent
-                                      .replace(/([A-Z])/g, " $1")
-                                      .trim()}
-                                  </div>
-
-                                  {countries.map((country) => (
-                                    <SelectItem
-                                      key={country.iso}
-                                      value={country.iso + country.dialCode}
-                                    >
-                                      {country.dialCode} ({country.iso}){" "}
-                                      {country.name}
-                                    </SelectItem>
-                                  ))}
-                                </div>
-                              )
-                            )}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-
-                    {/* Phone Number */}
+              {/* Email */}
+              <Controller
+                name="email"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Email</FieldLabel>
                     <Input
                       {...field}
-                      placeholder="10 digit number"
-                      maxLength={10}
-                      inputMode="numeric"
+                      type="email"
+                      placeholder="john@example.com"
                     />
-                  </div>
-                  {fieldState.error && (
-                    <FieldDescription className="text-destructive text-left">
-                      {fieldState.error.message}
-                    </FieldDescription>
-                  )}
-                </Field>
-              )}
-            />
+                    {fieldState.error && (
+                      <FieldDescription className="text-destructive text-left">
+                        {fieldState.error.message}
+                      </FieldDescription>
+                    )}
+                  </Field>
+                )}
+              />
 
-            {/* Facilitator Name */}
-            <Controller
-              name="facilitatorName"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel>Facilitator Name</FieldLabel>
-                  <Input {...field} placeholder="Facilitator Name" />
-                  {fieldState.error && (
-                    <FieldDescription className="text-destructive text-left">
-                      {fieldState.error.message}
-                    </FieldDescription>
-                  )}
-                </Field>
-              )}
-            />
-          </FieldGroup>
-        </form>
-      </CardContent>
+              {/* Phone Number */}
+              <Controller
+                name="phoneNumber"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Phone Number</FieldLabel>
 
-      <CardFooter className="flex gap-2">
-        <Button type="button" variant="outline" onClick={() => form.reset()}>
-          Reset
-        </Button>
-        <Button type="submit" form="registration-form">
-          Submit
-        </Button>
-      </CardFooter>
-    </Card>
+                    <div className="flex gap-2">
+                      {/* Country Code */}
+                      <Controller
+                        name="countryCode"
+                        control={form.control}
+                        render={({ field }) => (
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className="w-[120px]">
+                              <SelectValue placeholder="+91 (IN)">
+                                {COUNTRY_DISPLAY_MAP[field.value]}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.entries(COUNTRY_CODES_BY_CONTINENT).map(
+                                ([continent, countries]) => (
+                                  <div key={continent}>
+                                    <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
+                                      {continent
+                                        .replace(/([A-Z])/g, " $1")
+                                        .trim()}
+                                    </div>
+
+                                    {countries.map((country) => (
+                                      <SelectItem
+                                        key={country.iso}
+                                        value={country.iso + country.dialCode}
+                                      >
+                                        {country.dialCode} ({country.iso}){" "}
+                                        {country.name}
+                                      </SelectItem>
+                                    ))}
+                                  </div>
+                                )
+                              )}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+
+                      {/* Phone Number */}
+                      <Input
+                        {...field}
+                        placeholder="10 digit number"
+                        maxLength={10}
+                        inputMode="numeric"
+                      />
+                    </div>
+                    {fieldState.error && (
+                      <FieldDescription className="text-destructive text-left">
+                        {fieldState.error.message}
+                      </FieldDescription>
+                    )}
+                  </Field>
+                )}
+              />
+
+              {/* Facilitator Name */}
+              <Controller
+                name="facilitatorName"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel>Facilitator Name</FieldLabel>
+                    <Input {...field} placeholder="Facilitator Name" />
+                    {fieldState.error && (
+                      <FieldDescription className="text-destructive text-left">
+                        {fieldState.error.message}
+                      </FieldDescription>
+                    )}
+                  </Field>
+                )}
+              />
+            </FieldGroup>
+          </form>
+        </CardContent>
+
+        <CardFooter className="flex gap-2">
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
+            Reset
+          </Button>
+          <Button type="submit" form="registration-form">
+            Submit
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }
