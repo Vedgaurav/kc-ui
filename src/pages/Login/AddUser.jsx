@@ -1,7 +1,7 @@
 import useSecureAxios from "@/common_components/hooks/useSecureAxios";
 import { toast } from "sonner";
 
-const BACKEND_URL_USER = "/api/users";
+const BACKEND_URL_USER = "/auth/user";
 
 export function useAddUser() {
   const secureAxios = useSecureAxios();
@@ -14,7 +14,7 @@ export function useAddUser() {
       toast.success(`${response?.data?.email} user created`);
       return response.data;
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to add user");
+      toast.error(error?.response?.data?.errorMessage || "Failed to add user");
       throw error;
     }
   };

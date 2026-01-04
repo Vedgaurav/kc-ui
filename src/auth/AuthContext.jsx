@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import useSecureAxios from "@/common_components/hooks/useSecureAxios";
 import { BASE_URL } from "@/constants/Constants";
-import { toast } from "sonner";
 
 const AuthContext = createContext(null);
 
@@ -9,13 +8,13 @@ export function AuthProvider({ children }) {
   const secureAxios = useSecureAxios();
 
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [userAuthLoading, setUserAuthLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   /**
    * Called after successful login
    */
   const login = (userData) => {
-    console.log("AuthContext login");
     setUser(userData);
   };
 
@@ -52,22 +51,39 @@ export function AuthProvider({ children }) {
    */
   useEffect(() => {
     const loadUser = async () => {
+      setUserAuthLoading(true);
       try {
         const url = BASE_URL + "/api/users/auth";
         const res = await secureAxios.get(url);
-        setUser(res.data); // { email, phoneNumber, firstName, lastName, roles }
+        console.log("Load User success");
+        setUser(res.data);
+        setIsAuthenticated(true); // { email, phoneNumber, firstName, lastName, roles }
       } catch (error) {
+        console.log("AuthContext Load user error", error);
         setUser(null);
         //toast.error("Unauthorized");
         // console.log("Logging out");
-        logout();
+        //logout();
       } finally {
-        setLoading(false);
+        setUserAuthLoading(false);
       }
     };
 
     loadUser();
   }, []);
+
+  useEffect(() => {
+    console.log("SetIsAuthenticated useEffect ", user, user?.email?.length);
+    if (!userAuthLoading) {
+      if (user && user?.email?.length > 0) {
+        console.log("SetIsAuthenticated true loading ", userAuthLoading);
+        setIsAuthenticated(true);
+      } else {
+        console.log("SetIsAuthenticated false loading", userAuthLoading);
+        setIsAuthenticated(false);
+      }
+    }
+  }, [user]);
 
   const hasRole = (role) => user?.roles?.includes(role);
 
@@ -76,9 +92,9 @@ export function AuthProvider({ children }) {
       value={{
         user,
         roles: user?.roles || [],
-        isAuthenticated: !!user,
+        isAuthenticated,
         hasRole,
-        loading,
+        userAuthLoading,
         login,
         logout,
         logoutAll,

@@ -1,9 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, ArrowUpDown } from "lucide-react";
+import { Trash2, ArrowUp, ArrowDown, RefreshCw } from "lucide-react";
 import dayjs from "dayjs";
+import { BASE_URL } from "@/constants/Constants";
+import useSecureAxios from "@/common_components/hooks/useSecureAxios";
+import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const lastFiveDays = Array.from({ length: 6 }, (_, i) =>
   dayjs().subtract(i, "day")
@@ -12,51 +22,89 @@ const lastFiveDays = Array.from({ length: 6 }, (_, i) =>
 const PAGE_SIZES = [10, 25, 50, 100];
 
 export default function Chanting() {
+  const secureAxios = useSecureAxios();
   const [rounds, setRounds] = useState("");
   const [selectedDate, setSelectedDate] = useState(
     dayjs().format("YYYY-MM-DD")
   );
+
+  /* Backend driven data */
   const [entries, setEntries] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
 
   /* Pagination + Sorting */
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortOrder, setSortOrder] = useState("desc"); // desc = latest first
+  const [size, setSize] = useState(10);
+  const [page, setPage] = useState(1);
+  const [sort] = useState("chantingDate"); // backend field name
+  const [direction, setDirection] = useState("desc");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [roundError, setRoundError] = useState("");
 
-  const handleAdd = () => {
-    if (!rounds) return;
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchChanting();
+    } finally {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      setIsRefreshing(false);
+    }
+  };
 
-    setEntries((prev) => [
-      ...prev,
-      { date: selectedDate, rounds: Number(rounds) },
-    ]);
+  /* Fetch chanting data */
+  const fetchChanting = async () => {
+    const params = new URLSearchParams({
+      page: page - 1,
+      size,
+      sort: `${sort},${direction}`,
+    });
+
+    console.log("Fetch Chanting params", params);
+    const url = BASE_URL + "/api/chanting";
+    const response = await secureAxios.get(url, { params: params });
+
+    const data = response?.data;
+    setEntries(data?.content || []);
+    setTotalPages(data?.totalPages || 1);
+  };
+
+  useEffect(() => {
+    fetchChanting();
+  }, [page, size, direction]);
+
+  /* Save chanting */
+  const handleAdd = async () => {
+    if (!rounds) {
+      setRoundError("Please enter rounds");
+      return;
+    }
+
+    const url = BASE_URL + "/api/chanting";
+    const params = {
+      chantingDate: selectedDate,
+      chantingRounds: Number(rounds),
+    };
+    await secureAxios.post(url, params).then((response) => {
+      if (response?.length) {
+        toast.success("Record Added");
+      }
+    });
 
     setRounds("");
     setSelectedDate(dayjs().format("YYYY-MM-DD"));
+    setPage(1);
+    fetchChanting();
   };
 
   const canDelete = (date) => dayjs(date).isAfter(dayjs().subtract(5, "day"));
 
-  const handleDelete = (date) => {
-    setEntries((prev) => prev.filter((e) => e.date !== date));
+  const handleDelete = async (date) => {
+    await fetch(`/api/chanting/${date}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    fetchChanting();
   };
-
-  /* Sorting */
-  const sortedEntries = useMemo(() => {
-    return [...entries].sort((a, b) =>
-      sortOrder === "asc"
-        ? dayjs(a.date).diff(dayjs(b.date))
-        : dayjs(b.date).diff(dayjs(a.date))
-    );
-  }, [entries, sortOrder]);
-
-  /* Pagination */
-  const totalPages = Math.ceil(sortedEntries.length / pageSize);
-
-  const paginatedEntries = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return sortedEntries.slice(start, start + pageSize);
-  }, [sortedEntries, currentPage, pageSize]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
@@ -66,14 +114,18 @@ export default function Chanting() {
           <CardTitle>Add Chanting Rounds</CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           <Input
             type="number"
             placeholder="Enter rounds"
             value={rounds}
+            onFocus={() => setRoundError("")}
             onChange={(e) => setRounds(e.target.value.replace(/\D/g, ""))}
             className="text-3xl font-bold h-16 text-center"
           />
+          {roundError && (
+            <p className="text-destructive text-sm text-left">{roundError}</p>
+          )}
 
           <div className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:gap-2">
             {lastFiveDays.map((d) => {
@@ -83,7 +135,6 @@ export default function Chanting() {
                   key={formatted}
                   variant={selectedDate === formatted ? "default" : "outline"}
                   onClick={() => setSelectedDate(formatted)}
-                  className="h-12 text-base font-medium rounded-lg sm:h-9 sm:text-sm"
                 >
                   {d.format("DD MMM")}
                 </Button>
@@ -103,35 +154,130 @@ export default function Chanting() {
       {/* Chanting History */}
       <Card>
         <CardHeader>
-          <CardTitle>Chanting History</CardTitle>
+          <div className="relative flex items-center">
+            {/* Left refresh button */}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              title="Refresh"
+            >
+              <RefreshCw
+                key={isRefreshing ? "spinning" : "idle"}
+                className={`h-4 w-4 transition-transform ${
+                  isRefreshing ? "animate-spin" : ""
+                }`}
+              />
+            </Button>
+
+            {/* Centered title */}
+            <h3 className="absolute left-1/2 -translate-x-1/2 text-lg font-semibold">
+              Chanting History
+            </h3>
+
+            {/* Right-aligned sort button */}
+            <div className="ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+                onClick={() =>
+                  setDirection((o) => (o === "asc" ? "desc" : "asc"))
+                }
+              >
+                Date
+                {direction === "asc" ? (
+                  <ArrowUp className="h-4 w-4" />
+                ) : (
+                  <ArrowDown className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
         </CardHeader>
 
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {/* Mobile View */}
-          <div className="sm:hidden space-y-2">
-            {entries.map((e) => (
-              <div
-                key={e.date}
-                className="flex items-center justify-between rounded-lg border p-3"
-              >
-                <p className="font-medium">
-                  {dayjs(e.date).format("DD MMM YYYY")} – {e.rounds} rounds
-                </p>
+          <div className="sm:hidden space-y-3">
+            {entries.length === 0 ? (
+              <p className="text-center text-muted-foreground py-6">
+                No chanting records yet
+              </p>
+            ) : (
+              entries.map((e) => (
+                <div
+                  key={e.date}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
+                  <p className="font-medium">
+                    {dayjs(e.chantingDate).format("DD MMM YYYY")} –{" "}
+                    {e.chantingRounds} rounds
+                  </p>
 
-                {canDelete(e.date) && (
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleDelete(e.date)}
-                  >
-                    <Trash2 className="h-5 w-5 text-destructive" />
-                  </Button>
-                )}
+                  {canDelete(e.date) && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleDelete(e.date)}
+                    >
+                      <Trash2 className="h-5 w-5 text-destructive" />
+                    </Button>
+                  )}
+                </div>
+              ))
+            )}
+
+            {/* Mobile Rows + Pagination */}
+            <div className="flex items-center justify-between text-sm pt-2">
+              <div className="flex items-center gap-2">
+                <span>Rows:</span>
+                <Select
+                  defaultValue={10}
+                  onValueChange={(e) => {
+                    setSize(Number(e));
+                    setPage(page);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="10" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZES.map((s) => (
+                      <SelectItem value={s} key={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            ))}
+
+              <span>
+                {page}/{totalPages}
+              </span>
+            </div>
+
+            <div className="flex justify-between">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={page === 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Prev
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={page === totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
           </div>
 
-          {/* Desktop Table */}
           {/* Desktop Table */}
           <div className="hidden sm:block space-y-3">
             <table className="w-full text-sm">
@@ -144,7 +290,7 @@ export default function Chanting() {
               </thead>
 
               <tbody>
-                {paginatedEntries.length === 0 ? (
+                {entries.length === 0 ? (
                   <tr>
                     <td
                       colSpan={3}
@@ -154,12 +300,12 @@ export default function Chanting() {
                     </td>
                   </tr>
                 ) : (
-                  paginatedEntries.map((e) => (
-                    <tr key={e.date} className="border-b last:border-none">
-                      <td className="py-2 text-center font-medium">
-                        {dayjs(e.date).format("DD MMM YYYY")}
+                  entries.map((e) => (
+                    <tr key={e.date} className="border-b">
+                      <td className="py-2 text-center">
+                        {dayjs(e.chantingDate).format("DD MMM YYYY")}
                       </td>
-                      <td className="text-center font-medium">{e.rounds}</td>
+                      <td className="text-center">{e.chantingRounds}</td>
                       <td className="text-right">
                         {canDelete(e.date) && (
                           <Button
@@ -177,47 +323,49 @@ export default function Chanting() {
               </tbody>
             </table>
 
-            {/* Bottom controls */}
+            {/* Desktop Pagination */}
             <div className="flex items-center justify-between pt-2">
-              {/* Rows selector - bottom left */}
               <div className="flex items-center gap-2 text-sm">
                 <span>Rows:</span>
-                <select
-                  className="border rounded px-2 py-1 bg-background"
-                  value={pageSize}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                    setCurrentPage(1);
+                <Select
+                  defaultValue={10}
+                  onValueChange={(e) => {
+                    setSize(Number(e));
+                    setPage(page);
                   }}
                 >
-                  {PAGE_SIZES.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger>
+                    <SelectValue value={10} placeholder="10" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZES.map((s) => (
+                      <SelectItem value={s} key={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Pagination - bottom right */}
               <div className="flex items-center gap-2 text-sm">
                 <Button
                   size="sm"
                   variant="outline"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => p - 1)}
+                  disabled={page === 1}
+                  onClick={() => setPage((p) => p - 1)}
                 >
                   Prev
                 </Button>
 
                 <span>
-                  Page {currentPage} of {totalPages || 1}
+                  Page {page} of {totalPages}
                 </span>
 
                 <Button
                   size="sm"
                   variant="outline"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((p) => p + 1)}
+                  disabled={page === totalPages}
+                  onClick={() => setPage((p) => p + 1)}
                 >
                   Next
                 </Button>

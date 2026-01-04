@@ -20,7 +20,7 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const secureAxios = useSecureAxios();
   const { theme } = useTheme();
-  const { login } = useAuth();
+  const { login, isAuthenticated, userAuthLoading } = useAuth();
 
   const [googleTheme, setGoogleTheme] = useState("outline");
 
@@ -32,21 +32,30 @@ export function Login() {
     }
   }, [theme]);
 
+  useEffect(() => {
+    if (isAuthenticated && !userAuthLoading) {
+      console.log("Login Successfull navigating now");
+
+      navigate("/chanting", { replace: true });
+    }
+  }, [isAuthenticated, userAuthLoading]);
+
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
       setIsLoading(true);
 
-      const url = import.meta.env.VITE_BACKEND_BASE_URL + "/auth/google";
+      if (!isAuthenticated) {
+        const url = import.meta.env.VITE_BACKEND_BASE_URL + "/auth/google";
 
-      const res = await secureAxios.post(
-        url,
-        { idToken: credentialResponse.credential },
-        { withCredentials: true }
-      );
+        const res = await secureAxios.post(
+          url,
+          { idToken: credentialResponse.credential },
+          { withCredentials: true }
+        );
 
-      login(res?.data);
-
-      navigate("/chanting", { replace: true });
+        console.log("Google login response");
+        login(res?.data?.userDto);
+      }
     } catch (error) {
       console.error("Google login failed", error);
       const data = error?.response?.data;

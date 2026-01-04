@@ -15,33 +15,14 @@ function App() {
       element: <Layout />,
       children: [
         { path: "/", element: <div>Hello World</div> },
-
-        // PUBLIC
         { path: "/login", element: <Login /> },
         { path: "/signup", element: <Signup /> },
 
-        // PROTECTED routes
         {
-          element: <ProtectedRoute />, // wrapper for all authenticated users
+          element: <ProtectedRoute />,
           children: [
-            {
-              path: "/chanting",
-              element: <Chanting />,
-              requiredRoles: ["USER", "ADMIN"], // optional roles
-            },
-            {
-              path: "/profile",
-              element: <Profile />,
-              requiredRoles: ["USER", "ADMIN"],
-            },
-            {
-              path: "/admin",
-              element: (
-                <ProtectedRoute requiredRoles={["ADMIN"]}>
-                  <div>Admin Panel</div>
-                </ProtectedRoute>
-              ),
-            },
+            { path: "/chanting", element: <Chanting /> },
+            { path: "/profile", element: <Profile /> },
           ],
         },
       ],
@@ -49,14 +30,12 @@ function App() {
   ]);
 
   return (
-    <div>
-      <Toaster richColors position="top-right" className="text-left" />
-      <div>
-        <RouterProvider router={router}>
-          <AuthProvider />
-        </RouterProvider>
-      </div>
-    </div>
+    <>
+      <Toaster richColors position="top-right" />
+      <RouterProvider router={router}>
+        <AuthProvider />
+      </RouterProvider>
+    </>
   );
 }
 

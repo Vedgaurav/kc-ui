@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function ProtectedRoute({ roles }) {
-  const { isAuthenticated, hasRole, loading } = useAuth();
+  const { isAuthenticated, hasRole, userAuthLoading } = useAuth();
 
-  if (loading)
+  if (userAuthLoading)
     return (
       <>
         <div className="flex flex-col items-center gap-4">
@@ -18,7 +18,11 @@ export default function ProtectedRoute({ roles }) {
       </>
     );
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !userAuthLoading) {
+    console.log(
+      "ProtectedRoute navigating to login isAuthenticated false ",
+      userAuthLoading
+    );
     return <Navigate to="/login" replace />;
   }
 

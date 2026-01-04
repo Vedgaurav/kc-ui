@@ -24,8 +24,7 @@ export default function LogoutButton() {
   return (
     <div>
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          {" "}
+        <DropdownMenuTrigger asChild>
           <Button variant="outline">Logout</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
