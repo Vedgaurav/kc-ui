@@ -14,6 +14,7 @@ import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/auth/AuthContext";
+import { GoogleButton } from "@/common_components/GoogleButton";
 
 export function Login() {
   const navigate = useNavigate();
@@ -82,6 +83,7 @@ export function Login() {
             <CardContent className="flex justify-center">
               <div className="w-full max-w-2xs sm:max-w-sm">
                 <GoogleLogin
+                  shape="circle"
                   size="large"
                   width="100%"
                   onSuccess={handleGoogleSuccess}
@@ -90,8 +92,8 @@ export function Login() {
               </div>
             </CardContent>
 
-            <CardFooter className="flex justify-center sm:mt-5">
-              <Button>
+            <CardFooter className="flex justify-center sm:mt-5 ">
+              <Button className="rounded-full px-6 py-2">
                 <Link to="/signup">Signup</Link>
               </Button>
             </CardFooter>

@@ -73,13 +73,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    console.log("SetIsAuthenticated useEffect ", user, user?.email?.length);
     if (!userAuthLoading) {
       if (user && user?.email?.length > 0) {
-        console.log("SetIsAuthenticated true loading ", userAuthLoading);
         setIsAuthenticated(true);
       } else {
-        console.log("SetIsAuthenticated false loading", userAuthLoading);
         setIsAuthenticated(false);
       }
     }
