@@ -101,25 +101,27 @@ export default function Chanting() {
       setRoundError("Please enter rounds");
       return;
     }
-    console.log("Adding");
+
     const url = BASE_URL + "/api/chanting";
     const payload = {
       chantingDate: selectedDate,
       chantingRounds: Number(rounds),
     };
 
-    if (isEditMode) {
-      await secureAxios.put(url, payload).then((response) => {
+    try {
+      if (isEditMode) {
+        const response = await secureAxios.put(url, payload);
         if (response?.data) {
           toast.success("Rounds Updated " + response?.data?.chantingRounds);
         }
-      });
-    } else {
-      await secureAxios.post(url, payload).then((response) => {
+      } else {
+        const response = await secureAxios.post(url, payload);
         if (response?.data) {
           toast.success("Rounds Added " + response?.data?.chantingRounds);
         }
-      });
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.errorMessage);
     }
 
     setRounds("");
@@ -131,8 +133,6 @@ export default function Chanting() {
   const canDelete = (date) => dayjs(date).isAfter(dayjs().subtract(5, "day"));
 
   const handleDelete = async (e) => {
-    console.log("HandleDelete", e?.chantingId);
-
     const url = BASE_URL + `/api/chanting/${e?.chantingId}`;
     await secureAxios
       .delete(url)
@@ -148,9 +148,7 @@ export default function Chanting() {
   };
 
   const handleEdit = async (entry) => {
-    console.log("Edit", entry);
     setIsEditMode(true);
-    // set(dayjs(entry.chantingDate));
     setRounds(entry.chantingRounds.toString());
     setSelectedDate(entry.chantingDate);
   };
@@ -370,57 +368,9 @@ export default function Chanting() {
               </Table>
             )}
           </div>
+
           {/* Mobile Rows + Pagination */}
-          {/* <div className="flex items-center justify-between text-sm pt-2">
-              <div className="flex items-center gap-2">
-                <span>Rows:</span>
-                <Select
-                  defaultValue={10}
-                  onValueChange={(e) => {
-                    setSize(Number(e));
-                    setPage(page);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="10" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PAGE_SIZES.map((s) => (
-                      <SelectItem value={s} key={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <span>
-                {page}/{totalPages}
-              </span>
-        
-
-            <div className="flex justify-between">
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page === 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Prev
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={page === totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          </div> */}
-          {/* Mobile Rows + Pagination */}
-          <div className="space-y-3 pt-3 border-t">
+          <div className="sm:hidden space-y-3 pt-3 border-t">
             {/* Row selector + page info */}
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
@@ -539,7 +489,7 @@ export default function Chanting() {
                       </td>
                       <td className="text-center">{e.chantingRounds}</td>
                       <td className="text-right">
-                        {canDelete(e.date) && (
+                        {canDelete(e.chantingDate) ? (
                           <div>
                             <Button
                               size="icon"
@@ -565,6 +515,12 @@ export default function Chanting() {
                               onConfirm={() => handleDelete(e)}
                             />
                           </div>
+                        ) : (
+                          <>
+                            {/* Invisible placeholders keep height */}
+                            <div className="h-5 w-8 opacity-0" />
+                            <div className="h-5 w-8 opacity-0" />
+                          </>
                         )}
                       </td>
                     </tr>
