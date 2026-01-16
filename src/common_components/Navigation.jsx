@@ -23,6 +23,12 @@ export default function Navigation() {
 
           <NavigationMenuItem>
             <NavigationMenuLink asChild>
+              <Link to="/dashboard">Dashboard</Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild>
               <Link to="/profile">Profile</Link>
             </NavigationMenuLink>
           </NavigationMenuItem>

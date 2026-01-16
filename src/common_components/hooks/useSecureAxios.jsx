@@ -15,7 +15,7 @@ export default function useSecureAxios() {
 
       if (error.response?.status === 401) {
         if (originalRequest._retry) {
-          emitAuthExpired();
+          //emitAuthExpired();
           return Promise.reject(error);
         }
 
@@ -30,7 +30,6 @@ export default function useSecureAxios() {
 
           return api(originalRequest);
         } catch (refreshError) {
-          emitAuthExpired();
           return Promise.reject(refreshError);
         }
       }

@@ -35,8 +35,6 @@ export const COUNTRY_DISPLAY_MAP = Object.values(COUNTRY_CODES_BY_CONTINENT)
     return acc;
   }, {});
 
-/* -------------------- ZOD SCHEMA -------------------- */
-
 const formSchema = z.object({
   firstName: z
     .string()
