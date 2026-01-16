@@ -8,6 +8,7 @@ import Layout from "./common_components/Layout";
 import Signup from "./pages/Login/Signup";
 import { Login } from "./pages/Login/Login";
 import { Toaster } from "./components/ui/sonner";
+import Dashboard from "./pages/chanting/Dashboard";
 
 function App() {
   const router = createBrowserRouter([
@@ -23,6 +24,7 @@ function App() {
           children: [
             { path: "/chanting", element: <Chanting /> },
             { path: "/profile", element: <Profile /> },
+            { path: "/dashboard", element: <Dashboard /> },
           ],
         },
       ],

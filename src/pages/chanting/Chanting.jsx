@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, ArrowUp, ArrowDown, RefreshCw } from "lucide-react";
+import { Trash2, ArrowUp, ArrowDown, RefreshCw, Pencil } from "lucide-react";
 import dayjs from "dayjs";
 import { BASE_URL } from "@/constants/Constants";
 import useSecureAxios from "@/common_components/hooks/useSecureAxios";
@@ -14,6 +14,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useChantingApi } from "@/api/useChantingApi";
+import DeleteConfirmDialog from "@/common_components/DeleteConfirmDialog";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const lastFiveDays = Array.from({ length: 6 }, (_, i) =>
   dayjs().subtract(i, "day")
@@ -22,6 +33,9 @@ const lastFiveDays = Array.from({ length: 6 }, (_, i) =>
 const PAGE_SIZES = [10, 25, 50, 100];
 
 export default function Chanting() {
+  const roundsInputRef = useRef(null);
+
+  const { updateChanting } = useChantingApi();
   const secureAxios = useSecureAxios();
   const [rounds, setRounds] = useState("");
   const [selectedDate, setSelectedDate] = useState(
@@ -35,10 +49,11 @@ export default function Chanting() {
   /* Pagination + Sorting */
   const [size, setSize] = useState(10);
   const [page, setPage] = useState(1);
-  const [sort] = useState("chantingDate"); // backend field name
+  const [sort, setSort] = useState("chantingDate"); // backend field name
   const [direction, setDirection] = useState("desc");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [roundError, setRoundError] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -50,6 +65,16 @@ export default function Chanting() {
     }
   };
 
+  const handleRoundsChange = (e) => {
+    const maxLength = 3;
+    // Strictly only digits 0-9
+    const cleanedValue = e.target.value.replace(/[^0-9]/g, "");
+
+    if (cleanedValue.length <= maxLength) {
+      setRounds(cleanedValue);
+    }
+  };
+
   /* Fetch chanting data */
   const fetchChanting = async () => {
     const params = new URLSearchParams({
@@ -58,7 +83,6 @@ export default function Chanting() {
       sort: `${sort},${direction}`,
     });
 
-    console.log("Fetch Chanting params", params);
     const url = BASE_URL + "/api/chanting";
     const response = await secureAxios.get(url, { params: params });
 
@@ -72,22 +96,31 @@ export default function Chanting() {
   }, [page, size, direction]);
 
   /* Save chanting */
-  const handleAdd = async () => {
+  const handleAddUpdate = async () => {
     if (!rounds) {
       setRoundError("Please enter rounds");
       return;
     }
-
+    console.log("Adding");
     const url = BASE_URL + "/api/chanting";
-    const params = {
+    const payload = {
       chantingDate: selectedDate,
       chantingRounds: Number(rounds),
     };
-    await secureAxios.post(url, params).then((response) => {
-      if (response?.length) {
-        toast.success("Record Added");
-      }
-    });
+
+    if (isEditMode) {
+      await secureAxios.put(url, payload).then((response) => {
+        if (response?.data) {
+          toast.success("Rounds Updated " + response?.data?.chantingRounds);
+        }
+      });
+    } else {
+      await secureAxios.post(url, payload).then((response) => {
+        if (response?.data) {
+          toast.success("Rounds Added " + response?.data?.chantingRounds);
+        }
+      });
+    }
 
     setRounds("");
     setSelectedDate(dayjs().format("YYYY-MM-DD"));
@@ -97,13 +130,58 @@ export default function Chanting() {
 
   const canDelete = (date) => dayjs(date).isAfter(dayjs().subtract(5, "day"));
 
-  const handleDelete = async (date) => {
-    await fetch(`/api/chanting/${date}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
+  const handleDelete = async (e) => {
+    console.log("HandleDelete", e?.chantingId);
+
+    const url = BASE_URL + `/api/chanting/${e?.chantingId}`;
+    await secureAxios
+      .delete(url)
+      .then(() => {
+        toast.success("Record deleted");
+      })
+      .catch(() => {
+        console.log("Delete error");
+        toast.error("Record delete error");
+      });
 
     fetchChanting();
+  };
+
+  const handleEdit = async (entry) => {
+    console.log("Edit", entry);
+    setIsEditMode(true);
+    // set(dayjs(entry.chantingDate));
+    setRounds(entry.chantingRounds.toString());
+    setSelectedDate(entry.chantingDate);
+  };
+
+  useEffect(() => {
+    if (!isEditMode || !roundsInputRef.current) return;
+
+    const input = roundsInputRef.current;
+
+    input.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    const timer = setTimeout(() => {
+      input.focus();
+      // input.select();
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [isEditMode]);
+
+  const handleCancel = () => {
+    console.log("Cancelling Edit");
+    setIsEditMode(false);
+    setRounds("");
+  };
+
+  const handleSorting = (fieldName) => {
+    setDirection((o) => (o === "asc" ? "desc" : "asc"));
+    setSort(fieldName);
   };
 
   return (
@@ -111,16 +189,20 @@ export default function Chanting() {
       {/* Add Chanting */}
       <Card>
         <CardHeader>
-          <CardTitle>Add Chanting Rounds</CardTitle>
+          <CardTitle>
+            {isEditMode ? "Edit Chanting Rounds" : "Add Chanting Rounds"}
+          </CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-4">
           <Input
-            type="number"
+            ref={roundsInputRef}
+            id="chanting-form"
+            type="text"
             placeholder="Enter rounds"
             value={rounds}
             onFocus={() => setRoundError("")}
-            onChange={(e) => setRounds(e.target.value.replace(/\D/g, ""))}
+            onChange={handleRoundsChange}
             className="text-3xl font-bold h-16 text-center"
           />
           {roundError && (
@@ -130,10 +212,12 @@ export default function Chanting() {
           <div className="grid grid-cols-3 gap-3 sm:flex sm:flex-wrap sm:gap-2">
             {lastFiveDays.map((d) => {
               const formatted = d.format("YYYY-MM-DD");
+
               return (
                 <Button
                   key={formatted}
                   variant={selectedDate === formatted ? "default" : "outline"}
+                  // disabled={isEditMode}
                   onClick={() => setSelectedDate(formatted)}
                 >
                   {d.format("DD MMM")}
@@ -144,10 +228,12 @@ export default function Chanting() {
 
           <Button
             className="w-1/2 md:w-1/3 h-12 text-lg mx-auto block"
-            onClick={handleAdd}
+            onClick={handleAddUpdate}
           >
-            Save
+            {isEditMode ? <>Update</> : <>Save</>}
           </Button>
+
+          {isEditMode && <Button onClick={handleCancel}>Cancel</Button>}
         </CardContent>
       </Card>
 
@@ -175,61 +261,117 @@ export default function Chanting() {
             <h3 className="absolute left-1/2 -translate-x-1/2 text-lg font-semibold">
               Chanting History
             </h3>
-
-            {/* Right-aligned sort button */}
-            <div className="ml-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-1"
-                onClick={() =>
-                  setDirection((o) => (o === "asc" ? "desc" : "asc"))
-                }
-              >
-                Date
-                {direction === "asc" ? (
-                  <ArrowUp className="h-4 w-4" />
-                ) : (
-                  <ArrowDown className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-4">
           {/* Mobile View */}
           <div className="sm:hidden space-y-3">
+            {/*  Mobile Start */}
             {entries.length === 0 ? (
               <p className="text-center text-muted-foreground py-6">
                 No chanting records yet
               </p>
             ) : (
-              entries.map((e) => (
-                <div
-                  key={e.date}
-                  className="flex items-center justify-between rounded-lg border p-3"
-                >
-                  <p className="font-medium">
-                    {dayjs(e.chantingDate).format("DD MMM YYYY")} –{" "}
-                    {e.chantingRounds} rounds
-                  </p>
+              <Table className="table-fixed w-full">
+                {/* <TableCaption>A list of your recent invoices.</TableCaption> */}
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>
+                      <div className="flex justify-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center gap-1"
+                          onClick={() => handleSorting("chantingDate")}
+                        >
+                          Date
+                          {direction === "asc" && sort === "chantingDate" ? (
+                            <ArrowUp className="h-4 w-4" />
+                          ) : (
+                            <ArrowDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableHead>
+                    <TableHead>
+                      <div className="flex justify-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex items-center gap-1"
+                          onClick={() => handleSorting("chantingRounds")}
+                        >
+                          Rounds
+                          {direction === "asc" && sort === "chantingRounds" ? (
+                            <ArrowUp className="h-4 w-4" />
+                          ) : (
+                            <ArrowDown className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {entries.map((e) => {
+                    return (
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          {dayjs(e.chantingDate).format("DD MMM YYYY")}
+                        </TableCell>
 
-                  {canDelete(e.date) && (
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => handleDelete(e.date)}
-                    >
-                      <Trash2 className="h-5 w-5 text-destructive" />
-                    </Button>
-                  )}
-                </div>
-              ))
+                        <TableCell className="">{e.chantingRounds}</TableCell>
+
+                        <TableCell>
+                          <div>
+                            {canDelete(e.chantingDate) ? (
+                              <>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="m-2"
+                                  disabled={isEditMode}
+                                  onClick={() => handleEdit(e)}
+                                >
+                                  <Pencil className="h-4 w-4 text-blue-600" />
+                                </Button>
+
+                                <DeleteConfirmDialog
+                                  trigger={
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      disabled={isEditMode}
+                                    >
+                                      <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                  }
+                                  title="Delete chanting entry?"
+                                  description={`This will delete entry for ${selectedDate} rounds ${e.chantingRounds}`}
+                                  onConfirm={() => handleDelete(e)}
+                                  compactOnMobile={true}
+                                />
+                              </>
+                            ) : (
+                              <>
+                                {/* Invisible placeholders keep height */}
+                                <div className="h-5 w-8 opacity-0" />
+                                <div className="h-5 w-8 opacity-0" />
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             )}
-
-            {/* Mobile Rows + Pagination */}
-            <div className="flex items-center justify-between text-sm pt-2">
+          </div>
+          {/* Mobile Rows + Pagination */}
+          {/* <div className="flex items-center justify-between text-sm pt-2">
               <div className="flex items-center gap-2">
                 <span>Rows:</span>
                 <Select
@@ -255,7 +397,7 @@ export default function Chanting() {
               <span>
                 {page}/{totalPages}
               </span>
-            </div>
+        
 
             <div className="flex justify-between">
               <Button
@@ -276,15 +418,105 @@ export default function Chanting() {
                 Next
               </Button>
             </div>
+          </div> */}
+          {/* Mobile Rows + Pagination */}
+          <div className="space-y-3 pt-3 border-t">
+            {/* Row selector + page info */}
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Rows</span>
+                <Select
+                  defaultValue={10}
+                  onValueChange={(e) => {
+                    setSize(Number(e));
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="h-1 w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <span className="text-muted-foreground">
+                Page {page} of {totalPages}
+              </span>
+            </div>
+
+            {/* Prev / Next */}
+            <div className="flex justify-center gap-[35%] mt-5">
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-24 h-12"
+                disabled={page === 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Prev
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-24 h-12"
+                disabled={page === totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
           </div>
+
+          {/* Ved Mobile End */}
 
           {/* Desktop Table */}
           <div className="hidden sm:block space-y-3">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="py-2 text-center">Date</th>
-                  <th className="text-center">Rounds</th>
+                  <th className="py-2">
+                    <div className="flex justify-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-1"
+                        onClick={() => handleSorting("chantingDate")}
+                      >
+                        Date
+                        {direction === "asc" && sort === "chantingDate" ? (
+                          <ArrowUp className="h-4 w-4" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </th>
+
+                  <th className="py-2">
+                    <div className="flex justify-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex items-center gap-1"
+                        onClick={() => handleSorting("chantingRounds")}
+                      >
+                        Rounds
+                        {direction === "asc" && sort === "chantingRounds" ? (
+                          <ArrowUp className="h-4 w-4" />
+                        ) : (
+                          <ArrowDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </th>
+
                   <th />
                 </tr>
               </thead>
@@ -301,20 +533,38 @@ export default function Chanting() {
                   </tr>
                 ) : (
                   entries.map((e) => (
-                    <tr key={e.date} className="border-b">
+                    <tr key={e.chantingId} className="border-b">
                       <td className="py-2 text-center">
                         {dayjs(e.chantingDate).format("DD MMM YYYY")}
                       </td>
                       <td className="text-center">{e.chantingRounds}</td>
                       <td className="text-right">
                         {canDelete(e.date) && (
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDelete(e.date)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <div>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="m-2"
+                              disabled={isEditMode}
+                              onClick={() => handleEdit(e)}
+                            >
+                              <Pencil className="h-4 w-4 text-blue-600" />
+                            </Button>
+                            <DeleteConfirmDialog
+                              trigger={
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  disabled={isEditMode}
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              }
+                              title="Delete chanting entry?"
+                              description={`This will delete entry for ${selectedDate} rounds ${e.chantingRounds}`}
+                              onConfirm={() => handleDelete(e)}
+                            />
+                          </div>
                         )}
                       </td>
                     </tr>
