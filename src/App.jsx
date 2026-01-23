@@ -14,12 +14,12 @@ function App() {
     {
       element: <Layout />,
       children: [
-        { path: "/", element: <div>Hello World</div> },
         { path: "/login", element: <Login /> },
 
         {
           element: <ProtectedRoute />,
           children: [
+            { path: "/", element: <div>Welcome to KC</div> },
             { path: "/chanting", element: <Chanting /> },
             { path: "/profile", element: <Profile /> },
             { path: "/dashboard", element: <Dashboard /> },
