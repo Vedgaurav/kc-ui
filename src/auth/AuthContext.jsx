@@ -1,13 +1,10 @@
+import api from "@/api/axios";
 import { createContext, useContext, useEffect, useState } from "react";
-import useSecureAxios from "@/common_components/hooks/useSecureAxios";
-import { BASE_URL } from "@/constants/Constants";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const secureAxios = useSecureAxios();
-
-  const [user, setUser] = useState(null);
+  const [userAuth, setUserAuth] = useState(null);
   const [userAuthLoading, setUserAuthLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -15,7 +12,7 @@ export function AuthProvider({ children }) {
    * Called after successful login
    */
   const login = (userData) => {
-    setUser(userData);
+    setUserAuth(userData);
   };
 
   /**
@@ -23,12 +20,12 @@ export function AuthProvider({ children }) {
    */
   const logout = async () => {
     try {
-      const url = BASE_URL + "/auth/logout";
-      await secureAxios.post(url);
+      const url = "/auth/logout";
+      await api.post(url);
     } catch (e) {
       // ignore backend failure
     } finally {
-      setUser(null);
+      setUserAuth(null);
     }
   };
 
@@ -37,64 +34,70 @@ export function AuthProvider({ children }) {
    */
   const logoutAll = async () => {
     try {
-      const url = BASE_URL + "/auth/logoutAll";
-      await secureAxios.post(url);
+      const url = "/auth/logoutAll";
+      await api.post(url);
     } catch (e) {
       // ignore backend failure
     } finally {
-      setUser(null);
+      setUserAuth(null);
     }
   };
 
   /**
    * Restore session on page refresh
    */
-  useEffect(() => {
-    const loadUser = async () => {
-      setUserAuthLoading(true);
-      try {
-        const url = BASE_URL + "/api/users/auth";
-        const res = await secureAxios.get(url);
-        console.log("Load User success");
-        setUser(res.data);
-        setIsAuthenticated(true); // { email, phoneNumber, firstName, lastName, roles }
-      } catch (error) {
-        console.log("AuthContext Load user error", error);
-        setUser(null);
-        //toast.error("Unauthorized");
-        // console.log("Logging out");
-        //logout();
-      } finally {
-        setUserAuthLoading(false);
-      }
-    };
+  const loadUser = async () => {
+    setUserAuthLoading(true);
+    try {
+      const url = "/api/users/auth";
+      const res = await api.get(url);
+      console.log("Load User success");
+      setUserAuth(res.data);
+      setIsAuthenticated(true); // { email, phoneNumber, firstName, lastName, roles }
+    } catch (error) {
+      console.log("AuthContext Load user error", error);
+      setUserAuth(null);
+      //toast.error("Unauthorized");
+      // console.log("Logging out");
+      //logout();
+    } finally {
+      setUserAuthLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadUser();
   }, []);
 
+  const refreshAuth = () => {
+    console.log("refreshing auth");
+    loadUser();
+  };
+
   useEffect(() => {
     if (!userAuthLoading) {
-      if (user && user?.email?.length > 0) {
+      if (userAuth && userAuth?.email?.length > 0) {
         setIsAuthenticated(true);
       } else {
         setIsAuthenticated(false);
       }
     }
-  }, [user]);
+  }, [userAuth]);
 
-  const hasRole = (role) => user?.roles?.includes(role);
+  const hasRole = (role) => userAuth?.roles?.includes(role);
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        roles: user?.roles || [],
+        userAuth,
+        roles: userAuth?.roles || [],
         isAuthenticated,
         hasRole,
         userAuthLoading,
         login,
         logout,
         logoutAll,
+        refreshAuth,
       }}
     >
       {children}

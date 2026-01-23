@@ -12,8 +12,8 @@ import {
   ReferenceArea,
 } from "recharts";
 import dayjs from "dayjs";
-import useSecureAxios from "@/common_components/hooks/useSecureAxios";
 import { Spinner } from "@/components/ui/spinner";
+import api from "@/api/axios";
 
 const RANGE_OPTIONS = [
   { label: "7 Days", value: 7 },
@@ -25,16 +25,12 @@ const RANGE_OPTIONS = [
 ];
 
 export default function Dashboard() {
-  const secureAxios = useSecureAxios();
   const [range, setRange] = useState(7);
   const [records, setRecords] = useState([]);
   const [committedRounds, setCommittedRounds] = useState(0);
   const [idealRounds, setIdealRounds] = useState(16);
   const [average, setAverage] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [chartReady, setChartReady] = useState(0);
-  const containerRef = useRef(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     // console.log("Dashboard fetching");
@@ -43,10 +39,11 @@ export default function Dashboard() {
       .subtract(range - 1, "day")
       .format("YYYY-MM-DD");
 
-    secureAxios
+    api
       .get(`/api/chanting/dashboard?fromDate=${fromDate}&toDate=${toDate}`)
       .then((response) => {
         const data = response?.data;
+        console.log("Dashboard Fetched ", data, data.length);
         setCommittedRounds(data.committedRounds);
         setIdealRounds(data.idealRounds);
         setAverage(data.averageRounds || 0);
@@ -124,7 +121,7 @@ export default function Dashboard() {
       </div>
 
       {/* Chart */}
-      {data && data.length > 0 ? (
+      {data ? (
         <div className="h-[420px] min-h-[300px]">
           {/* <ResponsiveContainer width="100%" height="100%"> */}
           <AreaChart data={data} width="100%" height="100%">
