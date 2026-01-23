@@ -5,7 +5,6 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import Chanting from "./pages/chanting/Chanting";
 import Profile from "./pages/profile/Profile";
 import Layout from "./common_components/Layout";
-import Signup from "./pages/Login/Signup";
 import { Login } from "./pages/Login/Login";
 import { Toaster } from "./components/ui/sonner";
 import Dashboard from "./pages/chanting/Dashboard";
@@ -17,7 +16,6 @@ function App() {
       children: [
         { path: "/", element: <div>Hello World</div> },
         { path: "/login", element: <Login /> },
-        { path: "/signup", element: <Signup /> },
 
         {
           element: <ProtectedRoute />,

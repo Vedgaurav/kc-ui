@@ -21,74 +21,76 @@ const RANGE_OPTIONS = [
   //   { label: "90 Days", value: 90 },
   { label: "6 Months", value: 180 },
   { label: "1 Year", value: 360 },
-  { label: "All", value: 36000 },
+  { label: "All", value: null },
 ];
 
 export default function Dashboard() {
-  const [range, setRange] = useState(7);
+  const [range, setRange] = useState(30);
   const [records, setRecords] = useState([]);
   const [committedRounds, setCommittedRounds] = useState(0);
   const [idealRounds, setIdealRounds] = useState(16);
   const [average, setAverage] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // console.log("Dashboard fetching");
     const toDate = dayjs().format("YYYY-MM-DD");
-    const fromDate = dayjs()
-      .subtract(range - 1, "day")
-      .format("YYYY-MM-DD");
+
+    const params = {
+      toDate,
+    };
+
+    if (range !== null) {
+      params.fromDate = dayjs()
+        .subtract(range - 1, "day")
+        .format("YYYY-MM-DD");
+    }
+
+    setLoading(true);
 
     api
-      .get(`/api/chanting/dashboard?fromDate=${fromDate}&toDate=${toDate}`)
+      .get("/api/chanting/dashboard", { params })
       .then((response) => {
-        const data = response?.data;
-        console.log("Dashboard Fetched ", data, data.length);
+        const data = response.data;
+
         setCommittedRounds(data.committedRounds);
         setIdealRounds(data.idealRounds);
         setAverage(data.averageRounds || 0);
         setStreak(data.currentStreak || 0);
 
-        //console.log("Dashboard Fetched ", data);
-        const mapped = data.chantingDtoList.map((r) => ({
-          date: r.chantingDate,
-          chantingRounds: r.chantingRounds,
-          committedRounds: data.committedRounds,
-          idealRounds: data.idealRounds,
-        }));
-
-        setRecords(mapped);
+        setRecords(
+          data.chantingDtoList.map((r) => ({
+            date: r.chantingDate,
+            chantingRounds: r.chantingRounds,
+            committedRounds: data.committedRounds,
+            idealRounds: data.idealRounds,
+          }))
+        );
       })
       .catch((error) => {
-        console.log("Dashboard fetching error", error);
+        console.error("Dashboard fetching error", error);
         setRecords([]);
-      });
+      })
+      .finally(() => setLoading(false));
   }, [range]);
 
-  /* -------------------- DERIVED DATA -------------------- */
+  const data = records;
 
-  const data = useMemo(() => records, [records]);
-
-  //   console.log("data", data);
-
-  const metCommitmentDays = useMemo(() => {
-    if (data) {
-      return data?.filter((d) => d.chantingRounds >= committedRounds).length;
-    }
-    return 0;
-  }, [data, committedRounds]);
+  const metCommitmentDays = useMemo(
+    () => records.filter((d) => d.chantingRounds >= committedRounds).length,
+    [records, committedRounds]
+  );
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        {/* <h2 className="text-xl font-semibold">Chanting Progress Dashboard</h2> */}
-
         {/* Range Selector */}
         <div className="flex gap-2">
           {RANGE_OPTIONS.map((r) => (
             <button
-              key={r.value}
+              key={r.label}
+              disabled={range === r.value}
               onClick={() => setRange(r.value)}
               className={`px-3 py-1 rounded-md border text-sm ${
                 range === r.value ? "bg-blue-600 text-white" : "bg-background"
@@ -121,7 +123,7 @@ export default function Dashboard() {
       </div>
 
       {/* Chart */}
-      {data ? (
+      {data && (
         <div className="h-[420px] min-h-[300px]">
           {/* <ResponsiveContainer width="100%" height="100%"> */}
           <AreaChart data={data} width="100%" height="100%">
@@ -195,11 +197,15 @@ export default function Dashboard() {
           </AreaChart>
           {/* </ResponsiveContainer> */}
         </div>
+      )}
+      {loading ? (
+        <Spinner />
       ) : (
-        <>
-          {" "}
-          <Spinner />
-        </>
+        <div className="h-[420px] min-h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data}>...</AreaChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   );
