@@ -90,12 +90,6 @@ export function Login() {
                 />
               </div>
             </CardContent>
-
-            <CardFooter className="flex justify-center sm:mt-5 ">
-              <Button className="rounded-full px-6 py-2">
-                <Link to="/signup">Signup</Link>
-              </Button>
-            </CardFooter>
           </Card>
         </div>
       )}
