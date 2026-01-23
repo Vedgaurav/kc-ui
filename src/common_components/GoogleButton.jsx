@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/auth/AuthContext";
-import useSecureAxios from "@/common_components/hooks/useSecureAxios";
-import { Spinner } from "@/components/ui/spinner";
+import api from "@/api/axios";
 
 export function GoogleButton({ onClick }) {
   const { theme } = useTheme();
   const { login } = useAuth();
-  const secureAxios = useSecureAxios();
   const [isLoading, setIsLoading] = useState(false);
 
   // Initialize Google Identity Services
@@ -20,8 +18,8 @@ export function GoogleButton({ onClick }) {
         try {
           setIsLoading(true);
 
-          const res = await secureAxios.post(
-            import.meta.env.VITE_BACKEND_BASE_URL + "/auth/google",
+          const res = await api.post(
+            "/auth/google",
             { idToken: credentialResponse.credential },
             { withCredentials: true }
           );
@@ -34,7 +32,7 @@ export function GoogleButton({ onClick }) {
         }
       },
     });
-  }, [secureAxios, login]);
+  }, [login]);
 
   const handleClick = () => {
     if (!window.google) return;

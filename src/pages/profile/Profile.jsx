@@ -22,14 +22,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useUserApi } from "@/api/useUserApi";
 import { COUNTRY_CODES_BY_CONTINENT } from "@/constants/country-codes";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ChevronDown } from "lucide-react";
+import { useAuth } from "@/auth/AuthContext";
 
 function normalizeCountryCode(value) {
   // "US|+1" → "+1"
@@ -62,6 +56,7 @@ export default function Profile() {
   const { updateUser, getUser } = useUserApi();
   const [editMode, setEditMode] = useState(false);
   const [user, setUser] = useState(null);
+  const { refreshAuth } = useAuth();
 
   const form = useForm({
     resolver: zodResolver(profileSchema),
@@ -77,9 +72,12 @@ export default function Profile() {
   useEffect(() => {
     async function fetchUser() {
       try {
+        console.log("Fetching data on profile");
         const responseData = await getUser();
 
         setUser(responseData);
+
+        setEditMode(responseData?.status === "INACTIVE" || false);
 
         form.reset({
           firstName: responseData.firstName,
@@ -87,7 +85,7 @@ export default function Profile() {
           phoneNumber: responseData.phoneNumber,
           committedRounds: responseData.committedRounds,
           status: responseData.status,
-          countryCode: responseData.countryCode,
+          countryCode: responseData.countryCode || "+91",
         });
       } catch (err) {
         console.error(err);
@@ -109,6 +107,7 @@ export default function Profile() {
       setUser(updatedUser);
       form.reset(updatedUser);
       setEditMode(false);
+      refreshAuth();
     } catch (err) {
       console.error(err);
     }

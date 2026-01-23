@@ -1,4 +1,3 @@
-import useSecureAxios from "@/common_components/hooks/useSecureAxios";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,12 +13,11 @@ import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/auth/AuthContext";
-import { GoogleButton } from "@/common_components/GoogleButton";
+import api from "@/api/axios";
 
 export function Login() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const secureAxios = useSecureAxios();
   const { theme } = useTheme();
   const { login, isAuthenticated, userAuthLoading } = useAuth();
 
@@ -46,9 +44,9 @@ export function Login() {
       setIsLoading(true);
 
       if (!isAuthenticated) {
-        const url = import.meta.env.VITE_BACKEND_BASE_URL + "/auth/google";
+        const url = "/auth/google";
 
-        const res = await secureAxios.post(
+        const res = await api.post(
           url,
           { idToken: credentialResponse.credential },
           { withCredentials: true }
@@ -58,7 +56,7 @@ export function Login() {
         login(res?.data?.userDto);
       }
     } catch (error) {
-      console.error("Google login failed", error);
+      console.error("Google login failed Ved", error);
       const data = error?.response?.data;
       toast.error(data?.errorMessage);
       setIsLoading(false);

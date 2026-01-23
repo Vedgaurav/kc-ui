@@ -9,7 +9,7 @@ import ErrorBoundary from "./common_components/ErrorBoundary";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="system">
+    <ThemeProvider defaultTheme="dark">
       <ErrorBoundary>
         <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
           <AuthProvider>

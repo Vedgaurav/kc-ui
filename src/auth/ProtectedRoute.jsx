@@ -1,11 +1,11 @@
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function ProtectedRoute({ roles }) {
-  const { isAuthenticated, hasRole, userAuthLoading } = useAuth();
-
+  const { userAuth, isAuthenticated, hasRole, userAuthLoading } = useAuth();
+  const location = useLocation();
   if (userAuthLoading)
     return (
       <>
@@ -28,6 +28,10 @@ export default function ProtectedRoute({ roles }) {
 
   if (roles && !roles.some(hasRole)) {
     return <Navigate to="/unauthorized" replace />;
+  }
+
+  if (userAuth?.status === "INACTIVE" && location.pathname !== "/profile") {
+    return <Navigate to="/profile" replace />;
   }
 
   return <Outlet />;

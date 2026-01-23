@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, ArrowUp, ArrowDown, RefreshCw, Pencil } from "lucide-react";
 import dayjs from "dayjs";
-import { BASE_URL } from "@/constants/Constants";
-import useSecureAxios from "@/common_components/hooks/useSecureAxios";
 import { toast } from "sonner";
 import {
   Select,
@@ -25,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import api from "@/api/axios";
 
 const lastFiveDays = Array.from({ length: 6 }, (_, i) =>
   dayjs().subtract(i, "day")
@@ -35,8 +34,6 @@ const PAGE_SIZES = [10, 25, 50, 100];
 export default function Chanting() {
   const roundsInputRef = useRef(null);
 
-  const { updateChanting } = useChantingApi();
-  const secureAxios = useSecureAxios();
   const [rounds, setRounds] = useState("");
   const [selectedDate, setSelectedDate] = useState(
     dayjs().format("YYYY-MM-DD")
@@ -83,8 +80,8 @@ export default function Chanting() {
       sort: `${sort},${direction}`,
     });
 
-    const url = BASE_URL + "/api/chanting";
-    const response = await secureAxios.get(url, { params: params });
+    const url = "/api/chanting";
+    const response = await api.get(url, { params: params });
 
     const data = response?.data;
     setEntries(data?.content || []);
@@ -102,7 +99,7 @@ export default function Chanting() {
       return;
     }
 
-    const url = BASE_URL + "/api/chanting";
+    const url = "/api/chanting";
     const payload = {
       chantingDate: selectedDate,
       chantingRounds: Number(rounds),
@@ -110,12 +107,12 @@ export default function Chanting() {
 
     try {
       if (isEditMode) {
-        const response = await secureAxios.put(url, payload);
+        const response = await api.put(url, payload);
         if (response?.data) {
           toast.success("Rounds Updated " + response?.data?.chantingRounds);
         }
       } else {
-        const response = await secureAxios.post(url, payload);
+        const response = await api.post(url, payload);
         if (response?.data) {
           toast.success("Rounds Added " + response?.data?.chantingRounds);
         }
@@ -133,8 +130,8 @@ export default function Chanting() {
   const canDelete = (date) => dayjs(date).isAfter(dayjs().subtract(5, "day"));
 
   const handleDelete = async (e) => {
-    const url = BASE_URL + `/api/chanting/${e?.chantingId}`;
-    await secureAxios
+    const url = `/api/chanting/${e?.chantingId}`;
+    await api
       .delete(url)
       .then(() => {
         toast.success("Record deleted");
