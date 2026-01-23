@@ -83,7 +83,7 @@ export function Login() {
                 <GoogleLogin
                   shape="circle"
                   size="large"
-                  width="100%"
+                  width="99%"
                   theme={googleTheme}
                   onSuccess={handleGoogleSuccess}
                   onError={() => toast.error("Google login failed")}
