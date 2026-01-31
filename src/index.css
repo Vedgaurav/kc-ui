@@ -116,6 +116,7 @@
 }
 
 @layer base {
+
   * {
     @apply border-border outline-ring/50;
   }
@@ -204,10 +205,8 @@
        0 0 0 1px var(--ring),
        0 0 0 1000px var(--input) inset !important;
    }
-   
 
    
-
 
 
 

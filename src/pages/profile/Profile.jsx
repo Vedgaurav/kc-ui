@@ -24,6 +24,7 @@ import { useUserApi } from "@/api/useUserApi";
 import { COUNTRY_CODES_BY_CONTINENT } from "@/constants/country-codes";
 import { ChevronDown } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
+import { useFacilitatorApi } from "@/api/useFacilitatorApi";
 
 function normalizeCountryCode(value) {
   // "US|+1" → "+1"
@@ -42,6 +43,8 @@ const profileSchema = z.object({
     .number()
     .min(0, "Minimum 0 round")
     .max(500, "Maximum 500 rounds"),
+
+  facilitatorId: z.number().optional().nullable(),
 });
 
 export const COUNTRY_DISPLAY_MAP = Object.values(COUNTRY_CODES_BY_CONTINENT)
@@ -54,6 +57,8 @@ export const COUNTRY_DISPLAY_MAP = Object.values(COUNTRY_CODES_BY_CONTINENT)
 
 export default function Profile() {
   const { updateUser, getUser } = useUserApi();
+  const { getFacilitators } = useFacilitatorApi();
+  const [facilitators, setFacilitators] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [user, setUser] = useState(null);
   const { refreshAuth } = useAuth();
@@ -73,19 +78,26 @@ export default function Profile() {
     async function fetchUser() {
       try {
         console.log("Fetching data on profile");
-        const responseData = await getUser();
+        const [userData, facilitatorList] = await Promise.all([
+          getUser(),
+          getFacilitators(),
+        ]);
 
-        setUser(responseData);
+        console.log("Fetched data on profile", userData);
 
-        setEditMode(responseData?.status === "INACTIVE" || false);
+        setUser(userData);
+        setFacilitators(facilitatorList);
+
+        setEditMode(userData?.status === "INACTIVE" || false);
 
         form.reset({
-          firstName: responseData.firstName,
-          lastName: responseData.lastName,
-          phoneNumber: responseData.phoneNumber,
-          committedRounds: responseData.committedRounds,
-          status: responseData.status,
-          countryCode: responseData.countryCode || "+91",
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          phoneNumber: userData.phoneNumber,
+          committedRounds: userData.committedRounds,
+          status: userData.status,
+          countryCode: userData.countryCode || "+91",
+          facilitatorId: userData.facilitatorId ?? null,
         });
       } catch (err) {
         console.error(err);
@@ -289,6 +301,48 @@ export default function Profile() {
                           field.onChange(num);
                         }
                       }}
+                    />
+                    {/* Facilitator (optional) */}
+                    <Controller
+                      name="facilitatorId"
+                      control={form.control}
+                      render={({ field }) => (
+                        <Field>
+                          <FieldLabel>Facilitator</FieldLabel>
+
+                          <div className="relative">
+                            <select
+                              {...field}
+                              disabled={!editMode}
+                              value={field.value ?? ""}
+                              onChange={(e) =>
+                                field.onChange(
+                                  e.target.value ? Number(e.target.value) : null
+                                )
+                              }
+                              className="
+            h-10 w-full appearance-none rounded-md border border-input
+            bg-background px-3 pr-8 py-2 text-sm
+            focus-visible:outline-none focus-visible:ring-2
+            focus-visible:ring-ring focus-visible:ring-offset-2
+            disabled:cursor-not-allowed disabled:opacity-50
+          "
+                            >
+                              <option value="">No Facilitator</option>
+
+                              {facilitators.map((f) => (
+                                <option key={f.id} value={f.id}>
+                                  {f.firstName} {f.lastName}
+                                </option>
+                              ))}
+                            </select>
+
+                            <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-muted-foreground">
+                              <ChevronDown className="h-4 w-4" />
+                            </span>
+                          </div>
+                        </Field>
+                      )}
                     />
 
                     {fieldState.error && (

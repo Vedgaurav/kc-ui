@@ -1,4 +1,3 @@
-import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import ProtectedRoute from "./auth/ProtectedRoute";
@@ -8,6 +7,7 @@ import Layout from "./common_components/Layout";
 import { Login } from "./pages/Login/Login";
 import { Toaster } from "./components/ui/sonner";
 import Dashboard from "./pages/chanting/Dashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
 
 function App() {
   const router = createBrowserRouter([
@@ -23,6 +23,7 @@ function App() {
             { path: "/chanting", element: <Chanting /> },
             { path: "/profile", element: <Profile /> },
             { path: "/dashboard", element: <Dashboard /> },
+            { path: "/admin", element: <AdminUsers /> },
           ],
         },
       ],

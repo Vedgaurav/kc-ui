@@ -41,11 +41,12 @@ export default function Chanting() {
 
   /* Backend driven data */
   const [entries, setEntries] = useState([]);
-  const [totalPages, setTotalPages] = useState(1);
 
   /* Pagination + Sorting */
   const [size, setSize] = useState(10);
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  /* Pagination End */
   const [sort, setSort] = useState("chantingDate"); // backend field name
   const [direction, setDirection] = useState("desc");
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -110,6 +111,7 @@ export default function Chanting() {
         const response = await api.put(url, payload);
         if (response?.data) {
           toast.success("Rounds Updated " + response?.data?.chantingRounds);
+          setIsEditMode(false);
         }
       } else {
         const response = await api.post(url, payload);
@@ -180,7 +182,7 @@ export default function Chanting() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-3xl mx-auto py-6 space-y-6">
       {/* Add Chanting */}
       <Card>
         <CardHeader>
@@ -193,8 +195,10 @@ export default function Chanting() {
           <Input
             ref={roundsInputRef}
             id="chanting-form"
-            type="text"
+            type="tel"
             placeholder="Enter rounds"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={rounds}
             onFocus={() => setRoundError("")}
             onChange={handleRoundsChange}
