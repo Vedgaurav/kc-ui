@@ -2,9 +2,21 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/auth/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  ADMIN_ROLE,
+  FACILITATOR_ROLE,
+  SUPER_ADMIN_ROLE,
+} from "@/constants/Constants";
 
-export default function ProtectedRoute({ roles }) {
-  const { userAuth, isAuthenticated, hasRole, userAuthLoading } = useAuth();
+export default function ProtectedRoute() {
+  const {
+    userAuth,
+    isAuthenticated,
+    hasRole,
+    hasAnyRole,
+    roles,
+    userAuthLoading,
+  } = useAuth();
   const location = useLocation();
   if (userAuthLoading)
     return (
@@ -32,6 +44,20 @@ export default function ProtectedRoute({ roles }) {
 
   if (userAuth?.status === "INACTIVE" && location.pathname !== "/profile") {
     return <Navigate to="/profile" replace />;
+  }
+
+  if (
+    !hasRole(FACILITATOR_ROLE) &&
+    (location.pathname === "/facilitator" || location.pathname === "/facility")
+  ) {
+    return <Navigate to="/chanting" replace />;
+  }
+
+  if (
+    !hasAnyRole(ADMIN_ROLE, SUPER_ADMIN_ROLE) &&
+    (location.pathname === "/admin" || location.pathname === "/audit")
+  ) {
+    return <Navigate to="/chanting" replace />;
   }
 
   return <Outlet />;

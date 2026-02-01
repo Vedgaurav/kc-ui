@@ -14,6 +14,7 @@ import {
 import dayjs from "dayjs";
 import { Spinner } from "@/components/ui/spinner";
 import api from "@/api/axios";
+import { useLocation } from "react-router";
 
 const RANGE_OPTIONS = [
   { label: "7 Days", value: 7 },
@@ -24,7 +25,7 @@ const RANGE_OPTIONS = [
   { label: "All", value: null },
 ];
 
-export default function Dashboard() {
+export default function Dashboard({ apiConfig }) {
   const [range, setRange] = useState(30);
   const [records, setRecords] = useState([]);
   const [committedRounds, setCommittedRounds] = useState(0);
@@ -32,6 +33,8 @@ export default function Dashboard() {
   const [average, setAverage] = useState(0);
   const [streak, setStreak] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [totalRounds, setTotalRounds] = useState(0);
+  const [totalMahamantras, setTotalMahamantras] = useState(0);
 
   useEffect(() => {
     const toDate = dayjs().format("YYYY-MM-DD");
@@ -46,10 +49,12 @@ export default function Dashboard() {
         .format("YYYY-MM-DD");
     }
 
+    const finalUrl = apiConfig?.url ?? "/api/chanting/dashboard";
+
     setLoading(true);
 
     api
-      .get("/api/chanting/dashboard", { params })
+      .get(finalUrl, { params })
       .then((response) => {
         const data = response.data;
 
@@ -57,13 +62,15 @@ export default function Dashboard() {
         setIdealRounds(data.idealRounds);
         setAverage(data.averageRounds || 0);
         setStreak(data.currentStreak || 0);
+        setTotalRounds(data?.totalRounds || 0);
+        setTotalMahamantras(data?.totalMahamantras || 0);
 
         setRecords(
           data.chantingDtoList.map((r) => ({
             date: r.chantingDate,
             chantingRounds: r.chantingRounds,
-            committedRounds: data.committedRounds,
-            idealRounds: data.idealRounds,
+            committedRounds: data?.committedRounds,
+            idealRounds: data?.idealRounds,
           }))
         );
       })
@@ -111,6 +118,11 @@ export default function Dashboard() {
           value={`${metCommitmentDays}/${data?.length}`}
         />
         <StatCard title="Average" value={average} />
+        <StatCard title="Total Rounds" value={totalRounds} />
+        <StatCard
+          title="Total Mahamantras"
+          value={totalMahamantras.toLocaleString("en-IN")}
+        />
 
         <StatCard
           title="Streak"

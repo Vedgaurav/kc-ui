@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/auth/AuthContext";
 import api from "@/api/axios";
+import ModeToggle from "@/components/mode-toggle";
 
 export function Login() {
   const navigate = useNavigate();
@@ -56,14 +57,17 @@ export function Login() {
         login(res?.data?.userDto);
       }
     } catch (error) {
-      console.error("Google login failed Ved", error);
+      console.error("Google login failed", error);
       const data = error?.response?.data;
       toast.error(data?.errorMessage);
       setIsLoading(false);
     }
   };
   return (
-    <div className="grid grid-cols-4 gap-2 mt-20">
+    <div
+      className="grid grid-cols-4 gap-2  text-center p-2 fixed bottom-0 left-0 w-full
+    sm:static sm:mt-20"
+    >
       {isLoading ? (
         <div className="col-span-2 col-start-2">
           <Button disabled size="sm">
@@ -73,7 +77,11 @@ export function Login() {
         </div>
       ) : (
         <div className="col-span-4 sm:col-span-2 sm:col-start-2">
-          <Card className="min-h-[30vh] sm:min-h-auto flex flex-col justify-center sm:max-w-md mx-auto">
+          <Card className="relative min-h-[30vh] sm:min-h-auto flex flex-col justify-center sm:max-w-md mx-auto">
+            <div className="absolute top-3 right-3">
+              <ModeToggle />
+            </div>
+
             <CardHeader>
               <CardTitle>Login</CardTitle>
             </CardHeader>
@@ -83,7 +91,7 @@ export function Login() {
                 <GoogleLogin
                   shape="circle"
                   size="large"
-                  width="99%"
+                  width="99vw"
                   theme={googleTheme}
                   onSuccess={handleGoogleSuccess}
                   onError={() => toast.error("Google login failed")}

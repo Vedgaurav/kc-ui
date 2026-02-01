@@ -5,7 +5,7 @@ import App from "./App.jsx";
 import { ThemeProvider } from "./components/theme-provider";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "./auth/AuthContext";
-import ErrorBoundary from "./common_components/ErrorBoundary";
+import ErrorBoundary from "./common/error/ErrorBoundary";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

@@ -1,4 +1,5 @@
 import api from "@/api/axios";
+import { Spinner } from "@/components/ui/spinner";
 import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext(null);
@@ -13,6 +14,7 @@ export function AuthProvider({ children }) {
    */
   const login = (userData) => {
     setUserAuth(userData);
+    loadUser();
   };
 
   /**
@@ -85,6 +87,8 @@ export function AuthProvider({ children }) {
   }, [userAuth]);
 
   const hasRole = (role) => userAuth?.roles?.includes(role);
+  const hasAnyRole = (...roles) =>
+    roles.some((role) => userAuth?.roles?.includes(role));
 
   return (
     <AuthContext.Provider
@@ -93,6 +97,7 @@ export function AuthProvider({ children }) {
         roles: userAuth?.roles || [],
         isAuthenticated,
         hasRole,
+        hasAnyRole,
         userAuthLoading,
         login,
         logout,
@@ -100,7 +105,13 @@ export function AuthProvider({ children }) {
         refreshAuth,
       }}
     >
-      {children}
+      {userAuthLoading ? (
+        <div className="h-screen w-screen flex items-center justify-center">
+          <Spinner />
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 }
