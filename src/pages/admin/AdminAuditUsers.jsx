@@ -57,12 +57,8 @@ export const AdminAuditUser = () => {
               auditData?.map((audit) => {
                 return (
                   <TableRow key={audit?.id}>
-                    <TableCell className="break-all whitespace-normal">
-                      {audit?.actorUserEmail}
-                    </TableCell>
-                    <TableCell className="break-all whitespace-normal">
-                      {audit?.targetUserEmail}
-                    </TableCell>
+                    <TableCell>{audit?.actorUserEmail}</TableCell>
+                    <TableCell>{audit?.targetUserEmail}</TableCell>
                     <TableCell>{audit?.role}</TableCell>
                     <TableCell className="text-right">
                       {audit?.action}
