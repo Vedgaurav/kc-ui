@@ -37,7 +37,7 @@ export default function Sidebar({ onLinkClick }) {
     if (hasAnyRole(ADMIN_ROLE, SUPER_ADMIN_ROLE)) {
       setIsAdmin(true);
     }
-    if (hasRole(FACILITATOR_ROLE)) {
+    if (hasAnyRole(FACILITATOR_ROLE, ADMIN_ROLE, SUPER_ADMIN_ROLE)) {
       setIsFacilitator(true);
     }
   }, [isAuthenticated]);

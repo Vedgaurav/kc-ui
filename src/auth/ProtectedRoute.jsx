@@ -47,7 +47,7 @@ export default function ProtectedRoute() {
   }
 
   if (
-    !hasRole(FACILITATOR_ROLE) &&
+    !hasAnyRole(FACILITATOR_ROLE, ADMIN_ROLE, SUPER_ADMIN_ROLE) &&
     (location.pathname === "/facilitator" || location.pathname === "/facility")
   ) {
     return <Navigate to="/chanting" replace />;
