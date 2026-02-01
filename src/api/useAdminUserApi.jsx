@@ -8,6 +8,13 @@ export function useAdminUserApi() {
     return data;
   };
 
+  const getAdminAuditHistory = async (params) => {
+    const { data } = await api.get("/api/admin/users/audit", {
+      params: new URLSearchParams({ ...params }),
+    });
+    return data;
+  };
+
   const assignFacilitator = async (userIds) => {
     await api.post("/api/admin/users/assign-facilitator", { userIds });
   };
@@ -16,5 +23,19 @@ export function useAdminUserApi() {
     await api.post("/api/admin/users/remove-facilitator", { userIds });
   };
 
-  return { getUsers, assignFacilitator, removeFacilitator };
+  const assignAdmin = async (userIds, role) => {
+    await api.post("/api/admin/users/assign-admin", { userIds, role });
+  };
+
+  const removeAdmin = async (userIds) => {
+    await api.post("/api/admin/users/remove-admin", { userIds });
+  };
+  return {
+    getUsers,
+    assignFacilitator,
+    removeFacilitator,
+    assignAdmin,
+    removeAdmin,
+    getAdminAuditHistory,
+  };
 }

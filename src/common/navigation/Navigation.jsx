@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import Sidebar from "./Sidebar";
 import { useAuth } from "@/auth/AuthContext";
+import { Separator } from "@radix-ui/react-dropdown-menu";
 
 export default function Navigation({ children }) {
   const [desktopOpen, setDesktopOpen] = useState(true);
@@ -22,9 +23,12 @@ export default function Navigation({ children }) {
       >
         {desktopOpen && (
           <div className="w-full h-full flex flex-col">
-            <div className="mt-5">{userAuth.email}</div>
-            {/* Sidebar top bar */}
-            <div className="h-14 flex items-center justify-between border-b">
+            <div className="mt-5 px-3 text-sm text-muted-foreground">
+              {userAuth?.email}
+            </div>
+
+            {/* Top bar */}
+            <div className="h-14 flex items-center justify-between border-b px-3">
               <span className="font-semibold">Menu</span>
               <Button
                 variant="ghost"
@@ -35,7 +39,10 @@ export default function Navigation({ children }) {
               </Button>
             </div>
 
-            <Sidebar />
+            {/* THIS must be flex-1 */}
+            <div className="flex-1 overflow-hidden">
+              <Sidebar />
+            </div>
           </div>
         )}
       </aside>
@@ -71,12 +78,29 @@ export default function Navigation({ children }) {
               </Button>
             </SheetTrigger>
 
-            <SheetContent side="left" className="w-64 ml-3 mt-[60vh]">
-              <div className="flex flex-col">
-                <span className="font-semibold mt-5">{userAuth.email}</span>
-                <span className="font-semibold mt-5">Menu</span>
+            <SheetContent side="left" className="w-64 h-full p-0">
+              <div className="h-full flex flex-col">
+                {/* TOP HEADER */}
+                <div className="px-4 py-3 border-b flex items-center justify-between">
+                  <span className="font-semibold text-sm">
+                    {userAuth?.email}
+                  </span>
+                </div>
+
+                {/* PUSH MENU TO BOTTOM */}
+                <div className="flex-1 flex flex-col justify-end overflow-hidden">
+                  <div className="pb-4">
+                    <div className="px-2 text-sm font-semibold border-b pb-3">
+                      <span className="font-semibold text-sm ">Menu</span>
+                    </div>
+
+                    {/* Sidebar lives here */}
+                    <div className="max-h-[60vh] overflow-y-auto">
+                      <Sidebar onLinkClick={() => setMobileOpen(false)} />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <Sidebar onLinkClick={() => setMobileOpen(false)} />
             </SheetContent>
           </Sheet>
 

@@ -14,6 +14,7 @@ export function AuthProvider({ children }) {
    */
   const login = (userData) => {
     setUserAuth(userData);
+    loadUser();
   };
 
   /**
@@ -86,6 +87,8 @@ export function AuthProvider({ children }) {
   }, [userAuth]);
 
   const hasRole = (role) => userAuth?.roles?.includes(role);
+  const hasAnyRole = (...roles) =>
+    roles.some((role) => userAuth?.roles?.includes(role));
 
   return (
     <AuthContext.Provider
@@ -94,6 +97,7 @@ export function AuthProvider({ children }) {
         roles: userAuth?.roles || [],
         isAuthenticated,
         hasRole,
+        hasAnyRole,
         userAuthLoading,
         login,
         logout,

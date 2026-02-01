@@ -1,6 +1,6 @@
 import api from "./axios";
 
-const FACILITATORS_API = "/api/facilitators";
+const FACILITATORS_API = "/api/facilitator";
 
 export function useFacilitatorApi() {
   const getFacilitators = async () => {
@@ -14,7 +14,36 @@ export function useFacilitatorApi() {
     }
   };
 
-  return { getFacilitators };
+  const getFacilitatorUsers = async (params) => {
+    const url = `${FACILITATORS_API}/users`;
+    const { data } = await api.get(url, {
+      params: new URLSearchParams({ ...params }),
+    });
+    return data;
+  };
+
+  const getFacilitatorUserChantingDetails = async (userId, pagination) => {
+    const url = `${FACILITATORS_API}/user/${userId}`;
+    const { data } = await api.get(url, {
+      params: new URLSearchParams({ ...pagination }),
+    });
+    return data;
+  };
+
+  const getFacilitatorUserAnalytics = async (userId, pagination) => {
+    const url = `${FACILITATORS_API}/user/analytics/{userId}`;
+    const { data } = await api.get(url, {
+      params: new URLSearchParams({ ...pagination }),
+    });
+    return data;
+  };
+
+  return {
+    getFacilitators,
+    getFacilitatorUsers,
+    getFacilitatorUserChantingDetails,
+    getFacilitatorUserAnalytics,
+  };
 }
 
 //   const updateFacilitator = async (data) => {

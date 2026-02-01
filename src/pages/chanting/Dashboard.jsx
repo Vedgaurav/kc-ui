@@ -14,6 +14,7 @@ import {
 import dayjs from "dayjs";
 import { Spinner } from "@/components/ui/spinner";
 import api from "@/api/axios";
+import { useLocation } from "react-router";
 
 const RANGE_OPTIONS = [
   { label: "7 Days", value: 7 },
@@ -24,7 +25,7 @@ const RANGE_OPTIONS = [
   { label: "All", value: null },
 ];
 
-export default function Dashboard() {
+export default function Dashboard({ apiConfig }) {
   const [range, setRange] = useState(30);
   const [records, setRecords] = useState([]);
   const [committedRounds, setCommittedRounds] = useState(0);
@@ -48,10 +49,12 @@ export default function Dashboard() {
         .format("YYYY-MM-DD");
     }
 
+    const finalUrl = apiConfig?.url ?? "/api/chanting/dashboard";
+
     setLoading(true);
 
     api
-      .get("/api/chanting/dashboard", { params })
+      .get(finalUrl, { params })
       .then((response) => {
         const data = response.data;
 

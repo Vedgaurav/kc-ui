@@ -10,7 +10,7 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-export default function DeleteConfirmDialog({
+export default function ConfirmDialog({
   trigger,
   title = "Are you absolutely sure?",
   description = "This action cannot be undone.",

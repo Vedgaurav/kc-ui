@@ -44,7 +44,7 @@ const profileSchema = z.object({
     .min(0, "Minimum 0 round")
     .max(500, "Maximum 500 rounds"),
 
-  facilitatorId: z.number().optional().nullable(),
+  facilitatorId: z.string().optional().nullable(),
 });
 
 export const COUNTRY_DISPLAY_MAP = Object.values(COUNTRY_CODES_BY_CONTINENT)
@@ -83,7 +83,7 @@ export default function Profile() {
           getFacilitators(),
         ]);
 
-        console.log("Fetched data on profile", userData);
+        console.log("Fetched data on profile", facilitatorList);
 
         setUser(userData);
         setFacilitators(facilitatorList);
@@ -109,11 +109,9 @@ export default function Profile() {
 
   async function onSubmit(data) {
     try {
-      console.log("Submit", normalizeCountryCode(data.countryCode));
       const updatedUser = await updateUser({
         ...user,
         ...data,
-        // countryCode: normalizeCountryCode(data.countryCode),
       });
 
       setUser(updatedUser);
@@ -315,11 +313,7 @@ export default function Profile() {
                               {...field}
                               disabled={!editMode}
                               value={field.value ?? ""}
-                              onChange={(e) =>
-                                field.onChange(
-                                  e.target.value ? Number(e.target.value) : null
-                                )
-                              }
+                              onChange={(e) => field.onChange(e.target.value)}
                               className="
             h-10 w-full appearance-none rounded-md border border-input
             bg-background px-3 pr-8 py-2 text-sm
@@ -332,7 +326,7 @@ export default function Profile() {
 
                               {facilitators.map((f) => (
                                 <option key={f.id} value={f.id}>
-                                  {f.firstName} {f.lastName}
+                                  {f.name} {f.email}
                                 </option>
                               ))}
                             </select>

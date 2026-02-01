@@ -10,15 +10,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useAdminUserApi } from "@/api/useAdminUserApi";
 import { toast } from "sonner";
 import { useAuth } from "@/auth/AuthContext";
-import MobilePagination from "@/common_components/MobilePagination";
+import MobilePagination from "@/common/MobilePagination";
+import ConfirmDialog from "@/common/ConfirmDialog";
+import { SUPER_ADMIN_ROLE } from "@/constants/Constants";
 
 export default function AdminUsers() {
-  const { getUsers, assignFacilitator, removeFacilitator } = useAdminUserApi();
-  const { user: loggedInUser } = useAuth();
+  const FACILITATOR = "facilitator";
+  const ADMIN = "admin";
+
+  const {
+    getUsers,
+    assignFacilitator,
+    removeFacilitator,
+    assignAdmin,
+    removeAdmin,
+  } = useAdminUserApi();
+  const { userAuth: loggedInUser, hasRole } = useAuth();
+
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   const [users, setUsers] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -27,6 +41,17 @@ export default function AdminUsers() {
   const [size, setSize] = useState(10);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [tabActive, setTabActive] = useState(FACILITATOR);
+
+  const activeLabel = () => {
+    return tabActive === FACILITATOR ? "Facilitator" : "Admin";
+  };
+  const activeTabRole = (u) => {
+    if (tabActive === FACILITATOR) {
+      return u.facilitator ? "Yes" : "No";
+    }
+    return u.admin ? "Yes" : "No";
+  };
   /* Pagination End */
 
   // 🔍 Search handling
@@ -35,6 +60,9 @@ export default function AdminUsers() {
 
   useEffect(() => {
     loadUsers();
+    if (hasRole(SUPER_ADMIN_ROLE)) {
+      setIsSuperAdmin(true);
+    }
   }, [page, search]);
 
   async function loadUsers() {
@@ -68,8 +96,12 @@ export default function AdminUsers() {
 
   const handleAssign = async () => {
     try {
-      await assignFacilitator(selected);
-      toast.success("Facilitator role assigned");
+      if (tabActive === FACILITATOR) {
+        await assignFacilitator(selected);
+      } else if (tabActive === ADMIN && isSuperAdmin) {
+        await assignAdmin(selected);
+      }
+      toast.success(`${tabActive} role assigned`);
       loadUsers();
     } catch (error) {
       console.log("Assign Role error", error);
@@ -79,8 +111,13 @@ export default function AdminUsers() {
 
   const handleRemove = async () => {
     try {
-      await removeFacilitator(selected);
-      toast.success("Facilitator role removed");
+      if (tabActive === FACILITATOR) {
+        await removeFacilitator(selected);
+      } else if (tabActive === ADMIN && isSuperAdmin) {
+        await removeAdmin(selected);
+      }
+
+      toast.success(`${tabActive} role removed`);
       loadUsers();
     } catch {
       toast.error("Failed to remove role");
@@ -94,7 +131,7 @@ export default function AdminUsers() {
           <CardTitle>Admin – User Management</CardTitle>
         </CardHeader>
 
-        <CardContent className="px-0.5">
+        <CardContent className="p-0.5">
           {/* 🔍 Search & Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
             <div className="w-full sm:max-w-sm">
@@ -107,29 +144,55 @@ export default function AdminUsers() {
                 Search
               </Button>
             </div>
-
-            <div className="mt-4">
-              <Button
-                className="w-full"
-                disabled={!selected.length}
-                onClick={handleAssign}
-              >
-                Assign Facilitator
-              </Button>
-
-              <Button
-                className="mt-4 w-full"
-                variant="destructive"
-                disabled={!selected.length}
-                onClick={handleRemove}
-              >
-                Remove Facilitator
-              </Button>
-            </div>
           </div>
 
           {/* 📊 Table */}
+          <Tabs defaultValue="facilitator" className="w-100 mt-5">
+            <TabsList>
+              <TabsTrigger
+                value="facilitator"
+                onClick={() => setTabActive(FACILITATOR)}
+              >
+                Facilitator
+              </TabsTrigger>
+              {isSuperAdmin && (
+                <TabsTrigger value="admin" onClick={() => setTabActive(ADMIN)}>
+                  Admin
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </Tabs>
           <div className="overflow-x-auto">
+            <div className="m-4"></div>
+            <div className="flex flex-col">
+              <ConfirmDialog
+                trigger={
+                  <Button className="w-3xs mb-2" disabled={!selected.length}>
+                    Assign {activeLabel()}
+                  </Button>
+                }
+                title="Confirm assign role?"
+                description={`This will assign ${tabActive} role `}
+                confirmText="Assign"
+                onConfirm={handleAssign}
+              />
+
+              <ConfirmDialog
+                trigger={
+                  <Button
+                    className="w-3xs"
+                    variant="destructive"
+                    disabled={!selected.length}
+                  >
+                    Remove {activeLabel()}
+                  </Button>
+                }
+                title="Confirm Remove Role?"
+                description={`This will remove ${tabActive} role `}
+                confirmText="Remove"
+                onConfirm={handleRemove}
+              />
+            </div>
             <Table className="mt-4 mb-4">
               <TableHeader>
                 <TableRow>
@@ -137,7 +200,7 @@ export default function AdminUsers() {
                   <TableHead>Name</TableHead>
                   <TableHead className="">Email</TableHead>
                   {/* <TableHead>Status</TableHead> */}
-                  <TableHead className="text-center">Facilitator</TableHead>
+                  <TableHead className="text-center">{activeLabel()}</TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -164,7 +227,7 @@ export default function AdminUsers() {
                       {/* <TableCell>{u.status}</TableCell> */}
 
                       <TableCell className="text-center">
-                        {u.facilitator ? "Yes" : "No"}
+                        {activeTabRole(u)}
                       </TableCell>
                     </TableRow>
                   );
