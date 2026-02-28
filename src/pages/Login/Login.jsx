@@ -77,16 +77,14 @@ export function Login() {
         </div>
       ) : (
         <div className="col-span-4 sm:col-span-2 sm:col-start-2">
-          <div className="mb-32">
-            {/* <Card> */}
-            <div className="w-full h-full sm:h-64">
+          <div className="mb-1 ">
+            <div className="w-full flex justify-center">
               <img
-                src="/rm.jpg" // 👈 Put your image in public folder
+                src="/rk.png" // 👈 Put your image in public folder
                 alt="Login Banner"
-                className="w-full h-full "
+                className="w-full h-full sm:w-40"
               />
             </div>
-            {/* </Card> */}
           </div>
           <div>
             <Card className="relative min-h-[30vh] sm:min-h-auto flex flex-col justify-center sm:max-w-md mx-auto">
