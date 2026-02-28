@@ -19,6 +19,7 @@ import dayjs from "dayjs";
 import Dashboard from "../chanting/Dashboard";
 
 export const FacilityDetails = () => {
+  const tz = dayjs.tz.guess();
   const { state } = useLocation();
   const navigate = useNavigate();
   const facility = state?.facility;
@@ -56,6 +57,8 @@ export const FacilityDetails = () => {
       facility?.userId,
       pagination
     );
+
+    console.log("Facility Details Chanting History", response?.content);
     setUserChantingHistory(response?.content);
     setTotalPages(response?.totalPages);
   };
@@ -97,7 +100,7 @@ export const FacilityDetails = () => {
             </CardHeader>
             <CardContent className="">
               {/*Chanting History */}
-              <div className="sm:hidden space-y-3">
+              <div className="space-y-3">
                 {userChantingHistory.length === 0 ? (
                   <p className="text-center text-muted-foreground py-6">
                     No chanting records yet
@@ -132,9 +135,10 @@ export const FacilityDetails = () => {
                       {userChantingHistory.map((e) => (
                         <TableRow key={e.chantingId}>
                           <TableCell>
-                            {dayjs(e.chantingDate).format(
-                              "DD MMM YYYY hh:mm A"
-                            )}
+                            {dayjs
+                              .utc(e.chantingAt)
+                              .tz(tz)
+                              .format("DD MMM YYYY hh:mm A")}
                           </TableCell>
                           <TableCell>{e.chantingRounds}</TableCell>
                         </TableRow>
