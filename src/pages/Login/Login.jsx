@@ -77,41 +77,31 @@ export function Login() {
         </div>
       ) : (
         <div className="col-span-4 sm:col-span-2 sm:col-start-2">
-          <div className="mb-1 ">
-            {theme == "dark" ? (
-              <div className="w-full flex justify-center">
-                <img
-                  src="/logodarkmode3.png" // 👈 Put your image in public folder
-                  alt="Login Banner"
-                  className="w-full h-full sm:w-40"
-                />
-              </div>
-            ) : (
-              <div className="w-full flex justify-center">
-                <img
-                  src="/rk.png" // 👈 Put your image in public folder
-                  alt="Login Banner"
-                  className="w-full h-full sm:w-40"
-                />
-              </div>
-            )}
+          <div className="flex justify-center items-center w-full">
+            <img
+              src={theme === "dark" ? "/darkmodelogo4.png" : "/rk.png"}
+              alt="Sravan Kirtan"
+              className="
+                h-[68vh]
+                sm:h-[70vh]
+                w-auto
+                object-contain
+              "
+            />
           </div>
           <div>
-            <Card className="relative min-h-[30vh] sm:min-h-auto flex flex-col justify-center sm:max-w-md mx-auto">
-              <div className="absolute top-3 right-3">
-                <ModeToggle />
-              </div>
+            <Card className="relative min-h-[25vh] sm:min-h-auto flex flex-col justify-center sm:max-w-md mx-auto border-0 bg-transparent">
+              <CardContent className="flex flex-col items-center gap-4">
+                {/* Toggle aligned to right */}
+                <div className="w-full flex justify-end mb-10">
+                  <ModeToggle />
+                </div>
 
-              <CardHeader>
-                <CardTitle>Login</CardTitle>
-              </CardHeader>
-
-              <CardContent className="flex justify-center">
-                <div className="w-full max-w-2xs sm:max-w-sm">
+                {/* Google Button */}
+                <div className="w-full max-w-sm">
                   <GoogleLogin
                     shape="circle"
                     size="large"
-                    width="99vw"
                     theme={googleTheme}
                     onSuccess={handleGoogleSuccess}
                     onError={() => toast.error("Google login failed")}
