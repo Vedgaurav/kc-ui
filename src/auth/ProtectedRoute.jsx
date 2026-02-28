@@ -53,9 +53,13 @@ export default function ProtectedRoute() {
     return <Navigate to="/chanting" replace />;
   }
 
+  if (!hasAnyRole(SUPER_ADMIN_ROLE) && location.pathname === "/audit") {
+    return <Navigate to="/chanting" replace />;
+  }
+
   if (
     !hasAnyRole(ADMIN_ROLE, SUPER_ADMIN_ROLE) &&
-    (location.pathname === "/admin" || location.pathname === "/audit")
+    location.pathname === "/admin"
   ) {
     return <Navigate to="/chanting" replace />;
   }
