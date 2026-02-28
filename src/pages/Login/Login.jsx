@@ -78,13 +78,23 @@ export function Login() {
       ) : (
         <div className="col-span-4 sm:col-span-2 sm:col-start-2">
           <div className="mb-1 ">
-            <div className="w-full flex justify-center">
-              <img
-                src="/rk.png" // 👈 Put your image in public folder
-                alt="Login Banner"
-                className="w-full h-full sm:w-40"
-              />
-            </div>
+            {theme == "dark" ? (
+              <div className="w-full flex justify-center">
+                <img
+                  src="/logodarkmode3.png" // 👈 Put your image in public folder
+                  alt="Login Banner"
+                  className="w-full h-full sm:w-40"
+                />
+              </div>
+            ) : (
+              <div className="w-full flex justify-center">
+                <img
+                  src="/rk.png" // 👈 Put your image in public folder
+                  alt="Login Banner"
+                  className="w-full h-full sm:w-40"
+                />
+              </div>
+            )}
           </div>
           <div>
             <Card className="relative min-h-[30vh] sm:min-h-auto flex flex-col justify-center sm:max-w-md mx-auto">
