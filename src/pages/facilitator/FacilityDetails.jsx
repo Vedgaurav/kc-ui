@@ -25,7 +25,7 @@ export const FacilityDetails = () => {
   const { getFacilitatorUserChantingDetails } = useFacilitatorApi();
   const [userChantingHistory, setUserChantingHistory] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
-  const [sort, setSort] = useState("chantingDate");
+  const [sort, setSort] = useState("chantingAt");
   const [direction, setDirection] = useState("desc");
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
@@ -110,9 +110,9 @@ export const FacilityDetails = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleSorting("chantingDate")}
+                            onClick={() => handleSorting("chantingAt")}
                           >
-                            Date <SortIcon field="chantingDate" />
+                            Date <SortIcon field="chantingAt" />
                           </Button>
                         </TableHead>
                         <TableHead>
@@ -132,7 +132,9 @@ export const FacilityDetails = () => {
                       {userChantingHistory.map((e) => (
                         <TableRow key={e.chantingId}>
                           <TableCell>
-                            {dayjs(e.chantingDate).format("DD MMM YYYY")}
+                            {dayjs(e.chantingDate).format(
+                              "DD MMM YYYY hh:mm A"
+                            )}
                           </TableCell>
                           <TableCell>{e.chantingRounds}</TableCell>
                         </TableRow>
