@@ -232,11 +232,14 @@ export const ChantingHistory = ({
               {entries.map((e) => (
                 <tr key={e.chantingId} className="border-b">
                   <td className="text-center">
-                    {dayjs(e.chantingDate).format("DD MMM YYYY")}
+                    {dayjs
+                      .utc(e.chantingAt)
+                      .tz(tz)
+                      .format("DD MMM YYYY hh:mm A")}
                   </td>
                   <td className="text-center">{e.chantingRounds}</td>
                   <td className="text-right">
-                    {canDelete(e.chantingDate) && (
+                    {canDelete(e.chantingAt) && (
                       <>
                         <Button
                           size="icon"
