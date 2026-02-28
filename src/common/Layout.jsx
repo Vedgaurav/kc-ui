@@ -9,20 +9,11 @@ const authRoutes = ["/login", "/signup"];
 export default function Layout() {
   const location = useLocation();
   const isAuthPage = authRoutes.includes(location.pathname);
-  const isSignupPage = location.pathname === "/signup";
 
   // AUTH PAGES → no sidebar layout
   if (isAuthPage) {
     return (
       <div className="min-h-screen relative">
-        <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
-          {isSignupPage && (
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/login">Login</Link>
-            </Button>
-          )}
-        </div>
-
         <Outlet />
       </div>
     );

@@ -1,4 +1,6 @@
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Table,
@@ -20,6 +22,8 @@ import { ArrowDown, ArrowUp, Pencil, RefreshCw, Trash2 } from "lucide-react";
 import ConfirmDialog from "@/common/ConfirmDialog";
 
 const PAGE_SIZES = [5, 10, 20, 50];
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export const ChantingHistory = ({
   entries = [],
@@ -39,6 +43,8 @@ export const ChantingHistory = ({
   onPageChange,
   onSizeChange,
 }) => {
+  const tz = dayjs.tz.guess();
+
   const SortIcon = ({ field }) =>
     direction === "asc" && sort === field ? (
       <ArrowUp className="h-4 w-4" />
@@ -105,7 +111,12 @@ export const ChantingHistory = ({
                 {entries.map((e) => (
                   <TableRow key={e.chantingId}>
                     <TableCell>
-                      {dayjs(e.chantingDate).format("DD MMM YYYY")}
+                      {dayjs
+                        .utc(e.chantingAt)
+                        .tz(tz)
+                        .format("DD MMM YYYY hh:mm A")}
+                      {/* {dayjs(e.chantingDate).format("DD MMM YYYY HH:mm")} */}
+                      {/* {dayjs(e.chantingDate).format("DD MMM YYYY hh:mm A")} */}
                     </TableCell>
                     <TableCell>{e.chantingRounds}</TableCell>
                     <TableCell>

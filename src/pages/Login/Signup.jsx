@@ -24,7 +24,7 @@ import { useUserApi } from "@/api/useUserApi";
 import { COUNTRY_CODES_BY_CONTINENT } from "@/constants/country-codes";
 import { ChevronDown } from "lucide-react";
 import { useAuth } from "@/auth/AuthContext";
-import { useFacilitatorApi } from "@/api/useFacilitatorApi";
+import { useNavigate } from "react-router";
 
 function normalizeCountryCode(value) {
   // "US|+1" → "+1"
@@ -33,8 +33,15 @@ function normalizeCountryCode(value) {
 }
 
 const profileSchema = z.object({
-  firstName: z.string().min(2, "Minimum 2 characters"),
-  lastName: z.string().min(2, "Minimum 2 characters"),
+  firstName: z
+    .string()
+    .min(1, "First name is required")
+    .min(2, "Minimum 2 characters"),
+
+  lastName: z
+    .string()
+    .min(1, "Last name is required")
+    .min(2, "Minimum 2 characters"),
   countryCode: z.string().min(1, "Country code required"),
   phoneNumber: z
     .string()
@@ -44,7 +51,6 @@ const profileSchema = z.object({
     .min(0, "Minimum 0 round")
     .max(500, "Maximum 500 rounds"),
 
-  facilitatorId: z.string().optional().nullable(),
   gender: z.enum(["MALE", "FEMALE", "OTHER"], {
     required_error: "Gender is required",
   }),
@@ -58,10 +64,9 @@ export const COUNTRY_DISPLAY_MAP = Object.values(COUNTRY_CODES_BY_CONTINENT)
     return acc;
   }, {});
 
-export default function Profile() {
+export default function Signup() {
   const { updateUser, getUser } = useUserApi();
-  const { getFacilitators } = useFacilitatorApi();
-  const [facilitators, setFacilitators] = useState([]);
+  const navigate = useNavigate();
   const [editMode, setEditMode] = useState(false);
   const [user, setUser] = useState(null);
   const { refreshAuth } = useAuth();
@@ -81,16 +86,13 @@ export default function Profile() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        console.log("Fetching data on profile");
-        const [userData, facilitatorList] = await Promise.all([
-          getUser(),
-          getFacilitators(),
-        ]);
-
-        console.log("Fetched data on profile", facilitatorList);
+        const [userData] = await Promise.all([getUser()]);
 
         setUser(userData);
-        setFacilitators(facilitatorList);
+
+        if (userData?.status === "ACTIVE") {
+          navigate("/chanting", { replace: true });
+        }
 
         setEditMode(userData?.status === "INACTIVE" || false);
 
@@ -101,7 +103,6 @@ export default function Profile() {
           committedRounds: userData.committedRounds,
           status: userData.status,
           countryCode: userData.countryCode || "+91",
-          facilitatorId: userData.facilitatorId ?? null,
           gender: userData?.gender ?? "",
         });
       } catch (err) {
@@ -122,7 +123,9 @@ export default function Profile() {
       setUser(updatedUser);
       form.reset(updatedUser);
       setEditMode(false);
-      refreshAuth();
+
+      await refreshAuth();
+      // navigate("/chanting", { replace: true });
     } catch (err) {
       console.error(err);
     }
@@ -149,7 +152,7 @@ export default function Profile() {
     <div className="min-h-screen flex items-center justify-center">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>My Profile</CardTitle>
+          <CardTitle>Signup</CardTitle>
           <CardDescription>
             Signed up on {dayjs(user.createdAt).format("DD MMM YYYY")}
           </CardDescription>
@@ -307,7 +310,8 @@ export default function Profile() {
 
                     {fieldState.error && (
                       <FieldDescription className="text-destructive">
-                        {fieldState.error.message}
+                        {/* {fieldState.error.message} */}
+                        Gender is required.
                       </FieldDescription>
                     )}
                   </Field>
@@ -345,44 +349,6 @@ export default function Profile() {
                           field.onChange(num);
                         }
                       }}
-                    />
-                    {/* Facilitator (optional) */}
-                    <Controller
-                      name="facilitatorId"
-                      control={form.control}
-                      render={({ field }) => (
-                        <Field>
-                          <FieldLabel>Facilitator</FieldLabel>
-
-                          <div className="relative">
-                            <select
-                              {...field}
-                              disabled={!editMode}
-                              value={field.value ?? ""}
-                              onChange={(e) => field.onChange(e.target.value)}
-                              className="
-            h-10 w-full appearance-none rounded-md border border-input
-            bg-background px-3 pr-8 py-2 text-sm
-            focus-visible:outline-none focus-visible:ring-2
-            focus-visible:ring-ring focus-visible:ring-offset-2
-            disabled:cursor-not-allowed disabled:opacity-50
-          "
-                            >
-                              <option value="">No Facilitator</option>
-
-                              {facilitators.map((f) => (
-                                <option key={f.id} value={f.id}>
-                                  {f.name} {f.email}
-                                </option>
-                              ))}
-                            </select>
-
-                            <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-muted-foreground">
-                              <ChevronDown className="h-4 w-4" />
-                            </span>
-                          </div>
-                        </Field>
-                      )}
                     />
 
                     {fieldState.error && (

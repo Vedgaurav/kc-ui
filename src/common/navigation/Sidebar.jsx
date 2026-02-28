@@ -9,6 +9,8 @@ import {
   FACILITATOR_ROLE,
   SUPER_ADMIN_ROLE,
 } from "@/constants/Constants";
+import { Button } from "@/components/ui/button";
+import { PanelRightClose } from "lucide-react";
 
 function NavLink({ to, children, onClick }) {
   return (
@@ -28,7 +30,7 @@ function NavLink({ to, children, onClick }) {
   );
 }
 
-export default function Sidebar({ onLinkClick }) {
+export default function Sidebar({ onLinkClick, setMobileOpen }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isFacilitator, setIsFacilitator] = useState(false);
   const { isAuthenticated, hasAnyRole, hasRole } = useAuth();
@@ -51,6 +53,9 @@ export default function Sidebar({ onLinkClick }) {
         </NavLink>
         <NavLink to="/dashboard" onClick={onLinkClick}>
           Chanting Analytics
+        </NavLink>
+        <NavLink to="/today" onClick={onLinkClick}>
+          Today
         </NavLink>
         <NavLink to="/profile" onClick={onLinkClick}>
           Profile
@@ -79,6 +84,16 @@ export default function Sidebar({ onLinkClick }) {
           <div className="px-2 py-3 flex items-center gap-2">
             <LogoutButton />
             <ModeToggle />
+            {/* <div className="h-14 flex items-center justify-between border-b px-3"> */}
+            <Button
+              className="ml-16"
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileOpen(false)}
+            >
+              <PanelRightClose className="h-5 w-5" />
+            </Button>
+            {/* </div> */}
           </div>
         </div>
       )}

@@ -42,8 +42,8 @@ export default function ProtectedRoute() {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  if (userAuth?.status === "INACTIVE" && location.pathname !== "/profile") {
-    return <Navigate to="/profile" replace />;
+  if (userAuth?.status === "INACTIVE" && location.pathname !== "/signup") {
+    return <Navigate to="/signup" replace />;
   }
 
   if (
@@ -59,6 +59,8 @@ export default function ProtectedRoute() {
   ) {
     return <Navigate to="/chanting" replace />;
   }
-
+  if (location.pathname === "/signup" && userAuth?.status === "ACTIVE") {
+    return <Navigate to="/chanting" replace />;
+  }
   return <Outlet />;
 }

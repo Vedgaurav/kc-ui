@@ -2,11 +2,16 @@ import { useState } from "react";
 import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 import Sidebar from "./Sidebar";
 import { useAuth } from "@/auth/AuthContext";
-import { Separator } from "@radix-ui/react-dropdown-menu";
 
 export default function Navigation({ children }) {
   const [desktopOpen, setDesktopOpen] = useState(true);
@@ -41,7 +46,7 @@ export default function Navigation({ children }) {
 
             {/* THIS must be flex-1 */}
             <div className="flex-1 overflow-hidden">
-              <Sidebar />
+              <Sidebar setMobileOpen={() => {}} />
             </div>
           </div>
         )}
@@ -69,16 +74,21 @@ export default function Navigation({ children }) {
         <main className="flex-1 p-1 overflow-auto">
           <div>{children}</div>
         </main>
-        <footer className="h-14 flex items-center gap-2 border-b shrink-0">
+        <footer className="h-14 flex items-center justify-end gap-2 border-b shrink-0">
           {/* Mobile */}
+
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-6 w-6" />
+                <span className="font-semibold  sm:hidden">Menu</span>
+                <Menu className="h-6 w-6 mr-12" />
               </Button>
             </SheetTrigger>
 
-            <SheetContent side="left" className="w-64 h-full p-0">
+            <SheetContent side="right" className="w-64 h-full p-0">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Mobile Navigation Menu</SheetTitle>
+              </SheetHeader>
               <div className="h-full flex flex-col">
                 {/* TOP HEADER */}
                 <div className="px-4 py-3 border-b flex items-center justify-between">
@@ -96,15 +106,16 @@ export default function Navigation({ children }) {
 
                     {/* Sidebar lives here */}
                     <div className="max-h-[60vh] overflow-y-auto">
-                      <Sidebar onLinkClick={() => setMobileOpen(false)} />
+                      <Sidebar
+                        onLinkClick={() => setMobileOpen(false)}
+                        setMobileOpen={setMobileOpen}
+                      />
                     </div>
                   </div>
                 </div>
               </div>
             </SheetContent>
           </Sheet>
-
-          <span className="font-semibold ml-5 sm:hidden">Menu</span>
         </footer>
       </div>
     </div>
