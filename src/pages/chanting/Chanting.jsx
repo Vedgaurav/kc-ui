@@ -248,6 +248,12 @@ export default function Chanting() {
                   openTo="hours"
                   views={["hours", "minutes"]}
                   format="HH:mm"
+                  disableFuture={selectedDate === dayjs().format("YYYY-MM-DD")}
+                  maxTime={
+                    selectedDate === dayjs().format("YYYY-MM-DD")
+                      ? dayjs()
+                      : undefined
+                  }
                   slotProps={{
                     textField: {
                       fullWidth: true,
