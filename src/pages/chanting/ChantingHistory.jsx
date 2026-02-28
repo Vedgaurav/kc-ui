@@ -89,9 +89,9 @@ export const ChantingHistory = ({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onSort("chantingDate")}
+                      onClick={() => onSort("chantingAt")}
                     >
-                      Date <SortIcon field="chantingDate" />
+                      Date <SortIcon field="chantingAt" />
                     </Button>
                   </TableHead>
                   <TableHead className="text-center">
@@ -210,9 +210,9 @@ export const ChantingHistory = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onSort("chantingDate")}
+                    onClick={() => onSort("chantingAt")}
                   >
-                    Date <SortIcon field="chantingDate" />
+                    Date <SortIcon field="chantingAt" />
                   </Button>
                 </th>
                 <th>
