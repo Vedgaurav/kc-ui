@@ -32,10 +32,16 @@ function NavLink({ to, children, onClick }) {
 
 export default function Sidebar({ onLinkClick, setMobileOpen }) {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isFacilitator, setIsFacilitator] = useState(false);
   const { isAuthenticated, hasAnyRole, hasRole } = useAuth();
   useEffect(() => {
     console.log();
+
+    if (hasAnyRole(SUPER_ADMIN_ROLE)) {
+      setIsSuperAdmin(true);
+    }
+
     if (hasAnyRole(ADMIN_ROLE, SUPER_ADMIN_ROLE)) {
       setIsAdmin(true);
     }
@@ -70,9 +76,11 @@ export default function Sidebar({ onLinkClick, setMobileOpen }) {
             <NavLink to="/admin" onClick={onLinkClick}>
               Admin
             </NavLink>
-            <NavLink to="/audit" onClick={onLinkClick}>
-              Admin Audit
-            </NavLink>
+            {isSuperAdmin && (
+              <NavLink to="/audit" onClick={onLinkClick}>
+                Admin Audit
+              </NavLink>
+            )}
           </>
         )}
       </nav>
