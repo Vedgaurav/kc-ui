@@ -1,15 +1,9 @@
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
 import { Spinner } from "@/components/ui/spinner";
 import { GoogleLogin } from "@react-oauth/google";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/auth/AuthContext";
@@ -64,7 +58,7 @@ export function Login() {
     }
   };
   return (
-    <div className="min-h-screen flex flex-col bg-black overflow-hidden">
+    <div className="min-h-screen flex flex-col  overflow-hidden">
       {isLoading ? (
         <div className="flex items-center justify-center flex-1">
           <Button disabled size="sm">
@@ -84,7 +78,7 @@ export function Login() {
           </div>
 
           {/* 🔥 Bottom Login Section */}
-          <div className="pb-8 px-4">
+          <div className="mb-10 pb-8 px-4">
             <div className="max-w-md mx-auto flex flex-col items-center gap-4">
               {/* Toggle */}
               <div className="w-full flex justify-end mb-10">
