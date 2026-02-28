@@ -1,5 +1,6 @@
 import api from "@/api/axios";
 import { Spinner } from "@/components/ui/spinner";
+import { API_URL } from "@/constants/Constants";
 import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext(null);
@@ -45,6 +46,19 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const refreshUser = async () => {
+    setUserAuthLoading(true);
+    try {
+      const url = `${API_URL}/auth/refresh`;
+      await api.post(url);
+      await loadUser();
+    } catch (error) {
+      console.log("AuthContext Load user error", error);
+    } finally {
+      setUserAuthLoading(false);
+    }
+  };
+
   /**
    * Restore session on page refresh
    */
@@ -55,13 +69,10 @@ export function AuthProvider({ children }) {
       const res = await api.get(url);
       console.log("Load User success");
       setUserAuth(res.data);
-      setIsAuthenticated(true); // { email, phoneNumber, firstName, lastName, roles }
+      setIsAuthenticated(true);
     } catch (error) {
       console.log("AuthContext Load user error", error);
       setUserAuth(null);
-      //toast.error("Unauthorized");
-      // console.log("Logging out");
-      //logout();
     } finally {
       setUserAuthLoading(false);
     }
@@ -71,9 +82,9 @@ export function AuthProvider({ children }) {
     loadUser();
   }, []);
 
-  const refreshAuth = () => {
+  const refreshAuth = async () => {
     console.log("refreshing auth");
-    loadUser();
+    await refreshUser();
   };
 
   useEffect(() => {

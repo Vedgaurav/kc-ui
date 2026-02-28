@@ -4,17 +4,14 @@ import {
   Area,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
   ReferenceLine,
-  ReferenceArea,
 } from "recharts";
 import dayjs from "dayjs";
 import { Spinner } from "@/components/ui/spinner";
 import api from "@/api/axios";
-import { useLocation } from "react-router";
 
 const RANGE_OPTIONS = [
   { label: "7 Days", value: 7 },

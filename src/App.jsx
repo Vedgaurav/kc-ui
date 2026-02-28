@@ -12,6 +12,8 @@ import RouteErrorBoundary from "./common/error/RouteErrorBoundary";
 import { Facilitator } from "./pages/facilitator/Facilitator";
 import { AdminAuditUser } from "./pages/admin/AdminAuditUsers";
 import { FacilityDetails } from "./pages/facilitator/FacilityDetails";
+import Signup from "./pages/Login/Signup";
+import { Today } from "./pages/chanting/Today";
 
 function App() {
   const router = createBrowserRouter([
@@ -27,6 +29,7 @@ function App() {
             { path: "/", element: <div>Welcome to KC</div> },
             { path: "/chanting", element: <Chanting /> },
             { path: "/profile", element: <Profile /> },
+            { path: "/signup", element: <Signup /> },
             {
               path: "/dashboard",
               element: <Dashboard />,
@@ -35,6 +38,7 @@ function App() {
             { path: "/facilitator", element: <Facilitator /> },
             { path: "/audit", element: <AdminAuditUser /> },
             { path: "/facility", element: <FacilityDetails /> },
+            { path: "/today", element: <Today /> },
           ],
         },
       ],

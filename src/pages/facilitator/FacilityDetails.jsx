@@ -1,13 +1,5 @@
 import { useLocation, useNavigate } from "react-router";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -19,11 +11,10 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
-import { ChantingHistory } from "../chanting/ChantingHistory";
 import { useFacilitatorApi } from "@/api/useFacilitatorApi";
 import { useEffect, useState } from "react";
 import { Pagination } from "@/common/pagination/Pagination";
-import { ArrowDown, ArrowUp, Pencil, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import dayjs from "dayjs";
 import Dashboard from "../chanting/Dashboard";
 

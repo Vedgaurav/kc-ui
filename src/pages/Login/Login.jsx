@@ -77,28 +77,41 @@ export function Login() {
         </div>
       ) : (
         <div className="col-span-4 sm:col-span-2 sm:col-start-2">
-          <Card className="relative min-h-[30vh] sm:min-h-auto flex flex-col justify-center sm:max-w-md mx-auto">
-            <div className="absolute top-3 right-3">
-              <ModeToggle />
+          <div className="mb-32">
+            {/* <Card> */}
+            <div className="w-full h-full sm:h-64">
+              <img
+                src="/rm.jpg" // 👈 Put your image in public folder
+                alt="Login Banner"
+                className="w-full h-full "
+              />
             </div>
-
-            <CardHeader>
-              <CardTitle>Login</CardTitle>
-            </CardHeader>
-
-            <CardContent className="flex justify-center">
-              <div className="w-full max-w-2xs sm:max-w-sm">
-                <GoogleLogin
-                  shape="circle"
-                  size="large"
-                  width="99vw"
-                  theme={googleTheme}
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => toast.error("Google login failed")}
-                />
+            {/* </Card> */}
+          </div>
+          <div>
+            <Card className="relative min-h-[30vh] sm:min-h-auto flex flex-col justify-center sm:max-w-md mx-auto">
+              <div className="absolute top-3 right-3">
+                <ModeToggle />
               </div>
-            </CardContent>
-          </Card>
+
+              <CardHeader>
+                <CardTitle>Login</CardTitle>
+              </CardHeader>
+
+              <CardContent className="flex justify-center">
+                <div className="w-full max-w-2xs sm:max-w-sm">
+                  <GoogleLogin
+                    shape="circle"
+                    size="large"
+                    width="99vw"
+                    theme={googleTheme}
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => toast.error("Google login failed")}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
     </div>
